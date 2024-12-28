@@ -1,14 +1,16 @@
-# from django.shortcuts import render
 
 # Create your views here.
 # views.py
+
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
+from django.contrib.auth.models import User
+import re
 from django.views.decorators.csrf import csrf_protect
 from django.utils import timezone
 from django.http import JsonResponse
-from .forms import LoginForm
+from .forms import LoginForm, UserRegistrationForm
 import json
 
 @csrf_protect
@@ -72,4 +74,63 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    return redirect('login')
+    return redirect('authentication:login')
+
+@csrf_protect
+def register_view(request):
+    if request.method == 'POST':
+        # Check if it's an AJAX request
+        is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
+        
+        # Create a form instance with POST data and files
+        form = UserRegistrationForm(request.POST, request.FILES)
+        
+        # Process form data
+        if form.is_valid():
+            try:
+                # Create user instance but don't save yet
+                user = form.save(commit=False)
+                
+                # Add additional fields
+                user.first_name = request.POST.get('full_name')
+                user.department = request.POST.get('department')
+                
+                # Save the user
+                user.save()
+                
+                if is_ajax:
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'Registration successful! Please log in.',
+                        'redirect_url': '/auth/login/'
+                    })
+                
+                messages.success(request, "Registration successful! Please log in.")
+                return redirect('authentication:login')
+                
+            except Exception as e:
+                error_message = str(e)
+                if is_ajax:
+                    return JsonResponse({
+                        'success': False,
+                        'message': error_message
+                    }, status=400)
+                messages.error(request, error_message)
+        else:
+            # If form is invalid, handle errors
+            if is_ajax:
+                return JsonResponse({
+                    'success': False,
+                    'message': form.errors
+                }, status=400)
+            messages.error(request, "Please correct the errors below.")
+    else:
+        # If GET request, create empty form
+        form = UserRegistrationForm()
+
+    # Render the registration template with the form
+    context = {
+        'form': form,
+        'password_pattern': r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
+    }
+    return render(request, 'authentication/register.html', context)

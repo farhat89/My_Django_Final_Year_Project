@@ -1,4 +1,5 @@
 <!-- templates/authentication/login.html -->
+
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -20,7 +21,7 @@
             <h2 class="platform-title">
               Welcome to the Faculty Collaboration Platform
             </h2>
-            <p class="platform-title">
+            <p class="text-center text-white fs-6 mb-3">
               Enhancing academic collaboration through seamless file sharing
             </p>
           </div>
@@ -28,11 +29,12 @@
         <div class="row justify-content-center">
           <div class="col-md-12">
             <div class="login-card mx-auto">
-              <div class="text-center mb-2">
-                <i class="fas fa-graduation-cap login-icon"></i>
+              <div class="text-center mb-3">
+                <i class="fas fa-graduation-cap login-icon fa-2x mb-2"></i>
                 <h3>Sign In</h3>
                 <p class="text-muted">Access your faculty portal</p>
               </div>
+
               {% if messages %} {% for message in messages %}
               <div
                 class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show"
@@ -45,92 +47,114 @@
                 ></button>
               </div>
               {% endfor %} {% endif %}
+
               <form
                 id="loginForm"
                 method="POST"
                 action="{% url 'authentication:login' %}"
+                novalidate
               >
                 {% csrf_token %}
-                <div class="mb-2">
+
+                <div class="mb-3">
                   <label for="email" class="form-label">Email Address</label>
                   <div class="input-group">
                     <span class="input-group-text">
-                      <i class="fa-regular fa-envelope" aria-hidden="true"></i>
+                      <i class="fa-regular fa-envelope"></i>
                     </span>
-                    {{ form.email }}
+                    <input
+                      type="email"
+                      class="form-control"
+                      id="id_email"
+                      name="email"
+                      placeholder="Enter your email"
+                      required
+                    />
                   </div>
-                  {% if form.email.errors %}
-                  <div class="invalid-feedback d-block">
-                    {{ form.email.errors|join:", " }}
-                  </div>
-                  {% endif %}
+                  <div class="invalid-feedback"></div>
                 </div>
 
-                <div class="mb-2">
+                <div class="mb-3">
                   <label for="password" class="form-label">Password</label>
                   <div class="input-group">
                     <span class="input-group-text">
-                      <i class="fa-solid fa-lock" aria-hidden="true"></i>
+                      <i class="fa-solid fa-lock"></i>
                     </span>
-                    {{ form.password }}
+                    <input
+                      type="password"
+                      class="form-control"
+                      id="id_password"
+                      name="password"
+                      placeholder="Enter your password"
+                      required
+                    />
                     <button
                       type="button"
-                      class="password-toggle input-group-text"
-                      onclick="togglePassword()"
+                      class="btn btn-outline-secondary"
+                      id="togglePassword"
                     >
-                      <i class="far fa-eye" id="password-toggle-icon"></i>
+                      <i class="far fa-eye"></i>
                     </button>
                   </div>
-                  {% if form.password.errors %}
-                  <div class="invalid-feedback d-block">
-                    {{ form.password.errors|join:", " }}
-                  </div>
-                  {% endif %}
+                  <div class="invalid-feedback"></div>
                 </div>
 
-                <div class="mb-2 role-selector">
-                  <label class="form-label">Select Role</label>
-                  {{ form.role }} {% if form.role.errors %}
-                  <div class="invalid-feedback d-block">
-                    {{ form.role.errors|join:", " }}
-                  </div>
-                  {% endif %}
+                <div class="mb-3">
+                  <label for="role" class="form-label">Select Role</label>
+                  <select class="form-select" id="id_role" name="role" required>
+                    <option value="">Choose your role</option>
+                    <option value="Faculty">Faculty</option>
+                    <option value="Admin">Admin</option>
+                    <option value="External Partner">External Partner</option>
+                  </select>
+                  <div class="invalid-feedback"></div>
                 </div>
-                <div class="mb-3 form-check">
-                  {{ form.remember_me }}
-                  <label class="form-check-label" for="remember"
-                    >Remember me</label
-                  >
-                  {% comment %} 
+
+                <div
+                  class="mb-3 d-flex justify-content-between align-items-center"
+                >
+                  <div class="form-check">
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      id="remember"
+                      name="remember_me"
+                    />
+                    <label class="form-check-label" for="remember"
+                      >Remember me</label
+                    >
+                  </div>
                   <a
-                    href="{% url 'password_reset' %}"
-                    class="float-end register-link"
+                    href="{% url 'authentication:password_reset' %}"
+                    class="text-decoration-none"
                     >Forgot password?</a
                   >
-                  {% endcomment %}
                 </div>
+
                 <button
                   type="submit"
-                  class="btn btn-success btn-sign-in w-100"
+                  class="btn btn-success w-100 mb-3"
                   id="submitButton"
                 >
                   <span id="buttonText">Sign In</span>
                 </button>
-                {% comment %}
-                <div class="text-center mt-3">
-                  <span>New faculty member? </span>
-                  <a
-                    href="{% url 'authentication:register' %}"
-                    class="register-link"
-                    >Register Now</a
-                  >
+
+                <div class="text-center">
+                  <p class="mb-0">
+                    New faculty member?
+                    <a
+                      href="{% url 'authentication:register' %}"
+                      class="text-decoration-none"
+                      >Register Now</a
+                    >
+                  </p>
                 </div>
-                {% endcomment %}
-                <div class="text-center mt-3 support-text">
-                  <p>
+
+                <div class="text-center mt-3 text-muted">
+                  <small>
                     For assistance, contact IT support at<br />
                     support@university.edu
-                  </p>
+                  </small>
                 </div>
               </form>
             </div>
@@ -139,81 +163,28 @@
       </div>
     </div>
 
+    <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
+    <script src="{% static 'js/custom.js' %}"></script>
     <script>
-      function togglePassword() {
-        const passwordInput = document.getElementById("id_password");
-        const toggleIcon = document.getElementById("password-toggle-icon");
-
-        if (passwordInput.type === "password") {
-          passwordInput.type = "text";
-          toggleIcon.classList.remove("fa-eye");
-          toggleIcon.classList.add("fa-eye-slash");
-        } else {
-          passwordInput.type = "password";
-          toggleIcon.classList.remove("fa-eye-slash");
-          toggleIcon.classList.add("fa-eye");
-        }
-      }
-
-      async function handleSubmit(event) {
-        event.preventDefault();
-        const form = event.target;
-        const submitButton = form.querySelector("#submitButton");
-        const buttonText = submitButton.querySelector("#buttonText");
-
-        // Set loading state
-        submitButton.disabled = true;
-        buttonText.innerHTML = `
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                Signing in...
-            `;
-
-        try {
-          const formData = new FormData(form);
-          const response = await fetch(form.action, {
-            method: "POST",
-            headers: {
-              "X-Requested-With": "XMLHttpRequest",
-              "X-CSRFToken": formData.get("csrfmiddlewaretoken"),
-            },
-            body: JSON.stringify(Object.fromEntries(formData)),
-          });
-
-          const data = await response.json();
-
-          if (response.ok) {
-            window.location.href = data.redirect_url;
-          } else {
-            const errorAlert = document.createElement("div");
-            errorAlert.className =
-              "alert alert-danger alert-dismissible fade show";
-            errorAlert.innerHTML = `
-                        ${data.message}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    `;
-            form.insertBefore(errorAlert, form.firstChild);
-          }
-        } catch (error) {
-          console.error("Login error:", error);
-          const errorAlert = document.createElement("div");
-          errorAlert.className =
-            "alert alert-danger alert-dismissible fade show";
-          errorAlert.innerHTML = `
-                    An error occurred during login. Please try again.
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                `;
-          form.insertBefore(errorAlert, form.firstChild);
-        } finally {
-          submitButton.disabled = false;
-          buttonText.textContent = "Sign In";
-        }
-      }
-
+      // Password visibility toggle
       document
-        .getElementById("loginForm")
-        .addEventListener("submit", handleSubmit);
+        .getElementById("togglePassword")
+        .addEventListener("click", function () {
+          const passwordInput = document.getElementById("id_password");
+          const icon = this.querySelector("i");
+
+          if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash");
+          } else {
+            passwordInput.type = "password";
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
+          }
+        });
     </script>
   </body>
 </html>
