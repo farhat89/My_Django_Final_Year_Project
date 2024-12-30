@@ -57,7 +57,7 @@
                 {% csrf_token %}
 
                 <div class="mb-3">
-                  <label for="email" class="form-label">Email Address</label>
+                  <label for="id_email" class="form-label">Email Address</label>
                   <div class="input-group">
                     <span class="input-group-text">
                       <i class="fa-regular fa-envelope"></i>
@@ -68,6 +68,7 @@
                       id="id_email"
                       name="email"
                       placeholder="Enter your email"
+                      autocomplete="email"
                       required
                     />
                   </div>
@@ -75,7 +76,7 @@
                 </div>
 
                 <div class="mb-3">
-                  <label for="password" class="form-label">Password</label>
+                  <label for="id_password" class="form-label">Password</label>
                   <div class="input-group">
                     <span class="input-group-text">
                       <i class="fa-solid fa-lock"></i>
@@ -100,12 +101,12 @@
                 </div>
 
                 <div class="mb-3">
-                  <label for="role" class="form-label">Select Role</label>
+                  <label for="id_role" class="form-label">Select Role</label>
                   <select class="form-select" id="id_role" name="role" required>
                     <option value="">Choose your role</option>
-                    <option value="Faculty">Faculty</option>
-                    <option value="Admin">Admin</option>
-                    <option value="External Partner">External Partner</option>
+                    <option value="faculty">Faculty</option>
+                    <option value="admin">Admin</option>
+                    <option value="external">External Partner</option>
                   </select>
                   <div class="invalid-feedback"></div>
                 </div>

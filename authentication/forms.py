@@ -45,22 +45,28 @@ class LoginForm(forms.Form):
 
 
 class UserRegistrationForm(forms.ModelForm):
+    full_name = forms.CharField(
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter your full name'
+        })
+    )
+    
     confirm_password = forms.CharField(
-        widget=forms.PasswordInput(attrs={'placeholder': 'Confirm Password'}),
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Confirm Password'
+        }),
         label="Confirm Password"
     )
     
     class Meta:
         model = User
-        fields = ['email', 'username', 'password', 'role', 'profile_picture']
+        fields = ['email', 'password', 'role', 'profile_picture']
         widgets = {
             'email': forms.EmailInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'your.email@university.edu'
-            }),
-            'username': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Your Username'
             }),
             'password': forms.PasswordInput(attrs={
                 'class': 'form-control',
@@ -128,7 +134,15 @@ class UserRegistrationForm(forms.ModelForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
+        user.username = self.cleaned_data['email']  # Set username to email
         user.set_password(self.cleaned_data['password'])  # Hash the password
+        
+        # Handle full name
+        full_name = self.cleaned_data.get('full_name', '').split()
+        if full_name:
+            user.first_name = full_name[0]
+            user.last_name = ' '.join(full_name[1:]) if len(full_name) > 1 else ''
+        
         if commit:
             user.save()
         return user

@@ -1,22 +1,19 @@
-
-# Create your views here.
-# views.py
-
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
-import re
 from django.views.decorators.csrf import csrf_protect
 from django.utils import timezone
 from django.http import JsonResponse
-from .forms import LoginForm, UserRegistrationForm
+from django.urls import reverse
 import json
+from .forms import LoginForm, UserRegistrationForm
 
 @csrf_protect
 def login_view(request):
     if request.method == 'POST':
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
+        if is_ajax:
             data = json.loads(request.body)
             form = LoginForm(data)
         else:
@@ -39,28 +36,22 @@ def login_view(request):
                 user.login_attempts = 0
                 user.save()
 
-                if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                if is_ajax:
                     return JsonResponse({
                         'success': True,
-                        'redirect_url': '/dashboard/'
+                        'redirect_url': reverse('dashboard')
                     })
                 return redirect('dashboard')
             else:
-                user = User.objects.filter(email=email).first()
-                if user:
-                    user.login_attempts += 1
-                    user.last_login_attempt = timezone.now()
-                    user.save()
-
-                error_message = 'Invalid credentials or role'
-                if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                error_message = 'Invalid credentials or the selected role does not match your account role.'
+                if is_ajax:
                     return JsonResponse({
                         'success': False,
                         'message': error_message
                     }, status=400)
                 messages.error(request, error_message)
         else:
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            if is_ajax:
                 return JsonResponse({
                     'success': False,
                     'message': form.errors
@@ -72,65 +63,57 @@ def login_view(request):
 
     return render(request, 'authentication/login.html', {'form': form})
 
-def logout_view(request):
-    logout(request)
-    return redirect('authentication:login')
-
 @csrf_protect
 def register_view(request):
     if request.method == 'POST':
-        # Check if it's an AJAX request
         is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
         
-        # Create a form instance with POST data and files
+        # Print received data for debugging
+        print("POST data:", request.POST)
+        print("FILES:", request.FILES)
+        
         form = UserRegistrationForm(request.POST, request.FILES)
         
-        # Process form data
-        if form.is_valid():
-            try:
-                # Create user instance but don't save yet
-                user = form.save(commit=False)
-                
-                # Add additional fields
-                user.first_name = request.POST.get('full_name')
-                user.department = request.POST.get('department')
-                
-                # Save the user
-                user.save()
-                
-                if is_ajax:
-                    return JsonResponse({
-                        'success': True,
-                        'message': 'Registration successful! Please log in.',
-                        'redirect_url': '/auth/login/'
-                    })
-                
-                messages.success(request, "Registration successful! Please log in.")
-                return redirect('authentication:login')
-                
-            except Exception as e:
-                error_message = str(e)
-                if is_ajax:
-                    return JsonResponse({
-                        'success': False,
-                        'message': error_message
-                    }, status=400)
-                messages.error(request, error_message)
-        else:
-            # If form is invalid, handle errors
+        if not form.is_valid():
+            print("Form errors:", form.errors)
+            error_response = {
+                'success': False,
+                'message': {field: str(errors[0]) for field, errors in form.errors.items()}
+            }
+            if is_ajax:
+                return JsonResponse(error_response, status=400)
+            messages.error(request, "Please correct the errors below.")
+            return render(request, 'authentication/register.html', {'form': form})
+        
+        try:
+            user = form.save()  # This will now handle username creation
+            
+            success_message = 'Registration successful! Please log in.'
+            if is_ajax:
+                return JsonResponse({
+                    'success': True,
+                    'message': success_message,
+                    'redirect_url': reverse('authentication:login')
+                })
+            
+            messages.success(request, success_message)
+            return redirect('authentication:login')
+            
+        except Exception as e:
+            print("Registration error:", str(e))
+            error_message = "An unexpected error occurred during registration. Please try again later."
             if is_ajax:
                 return JsonResponse({
                     'success': False,
-                    'message': form.errors
+                    'message': {'general': error_message}
                 }, status=400)
-            messages.error(request, "Please correct the errors below.")
+            messages.error(request, error_message)
+    
     else:
-        # If GET request, create empty form
         form = UserRegistrationForm()
+    
+    return render(request, 'authentication/register.html', {'form': form})
 
-    # Render the registration template with the form
-    context = {
-        'form': form,
-        'password_pattern': r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
-    }
-    return render(request, 'authentication/register.html', context)
+def logout_view(request):
+    logout(request)
+    return redirect(reverse('authentication:login'))

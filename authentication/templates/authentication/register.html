@@ -1,167 +1,281 @@
-{% extends "authentication/base.html" %}
-
-{% block title %}Register Account{% endblock %}
-{% load static %}
-
+{% extends "authentication/base.html" %} {% block title %}Register Account{%endblock %} 
+{% load static %} 
 {% block content %}
 <div class="reg-container py-5">
-    <div class="container">
-        <h2 class="text-center text-white mb-2">Create Your Account</h2>
-        <p class="text-center text-white fs-6 mb-3">Join the platform that connects faculty for seamless collaboration and file sharing.</p>
-        
-        <div class="register-card p-4 bg-white rounded mx-auto">
-            <form id="registrationForm" method="POST" enctype="multipart/form-data" novalidate>
-                {% csrf_token %}
-                {% comment %} {{ form.as_p }} {% endcomment %}
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="full_name" class="form-label">Full Name</label>
-                        <input type="text" name="full_name" id="full_name" class="form-control"
-                               placeholder="Enter your full name" required>
-                        <div class="invalid-feedback"></div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="email" class="form-label">Academic Email</label>
-                        <input type="email" name="email" id="email" class="form-control" 
-                               placeholder="your.name@university.edu" required>
-                        <div class="invalid-feedback"></div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <div class="input-group">
-                            <input type="password" name="password" id="password" class="form-control" placeholder="Create a strong password" required>
-                            <button type="button" class="btn btn-outline-secondary" id="togglePassword">
-                                <i class="far fa-eye"></i>
-                            </button>
-                        </div>
-                        <div class="invalid-feedback"></div>
-                        <div class="password-strength-meter mt-2">
-                            <small class="text-muted">Password must contain: At least 8 characters, 1 uppercase letter, 1 lowercase letter, a number and 1 special character</small>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="confirm_password" class="form-label">Confirm Password</label>
-                        <input type="password" name="confirm_password" id="confirm_password" 
-                               class="form-control" placeholder="Confirm your password" required>
-                        <div class="invalid-feedback"></div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="department" class="form-label">Department/Faculty</label>
-                        <select name="department" id="department" class="form-control" required>
-                            <option value="">Select your department</option>
-                            <option value="Computer Science">Computer Science</option>
-                            <option value="Software Engineering">Software Engineering</option>
-                            <option value="Cyber Security">Cyber Security</option>
-                        </select>
-                        <div class="invalid-feedback"></div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Role</label>
-                        <div class="role-container">
-                            <div class="d-flex align-items-center">
-                                <div class="form-check me-3">
-                                    <input type="radio" name="role" id="faculty" value="Faculty" 
-                                           class="form-check-input" required>
-                                    <label for="faculty" class="form-check-label">Faculty</label>
-                                </div>
-                                <div class="form-check me-3">
-                                    <input type="radio" name="role" id="admin" value="Admin" 
-                                           class="form-check-input">
-                                    <label for="admin" class="form-check-label">Admin</label>
-                                </div>
-                                <div class="form-check">
-                                    <input type="radio" name="role" id="partner" value="External Partner" 
-                                           class="form-check-input">
-                                    <label for="partner" class="form-check-label">External Partner</label>
-                                </div>
-                            </div>
-                            <div class="invalid-feedback"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-12 mb-4">
-                        <label for="profile_picture" class="form-label">Profile Picture</label>
-                        <input type="file" name="profile_picture" id="profile_picture"
-                               class="form-control" required accept="image/jpeg,image/png">
-                        <div class="invalid-feedback"></div>
-                        <small class="text-muted">Accepted formats: JPEG, PNG. Maximum size: 2MB</small>
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-success w-100" id="submitButton">
-                    <span id="buttonText">Register Account</span>
-                </button>
-                <div class="footer-link text-center mt-3">
-                    Already have an account? <a href="{% url 'authentication:login' %}">Log in here</a>
-                </div>
-                <div class="text-center mt-3 text-muted">
-                    For assistance, contact IT support at support@university.edu
-                </div>
-            </form>
+  <div class="container">
+    <h2 class="text-center text-white mb-2">Create Your Account</h2>
+    <p class="text-center text-white fs-6 mb-3">
+      Join the platform that connects faculty for seamless collaboration and
+      file sharing.
+    </p>
+
+    <div class="register-card p-4 bg-white rounded mx-auto">
+      <form
+        id="registrationForm"
+        method="POST"
+        enctype="multipart/form-data"
+        novalidate
+      >
+        {% csrf_token %}
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="full_name" class="form-label">Full Name</label>
+            <input
+              type="text"
+              name="full_name"
+              id="full_name"
+              class="form-control"
+              placeholder="Enter your full name"
+              required
+            />
+            <div class="invalid-feedback"></div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="email" class="form-label">Academic Email</label>
+            <input
+              type="email"
+              name="email"
+              id="email"
+              class="form-control"
+              placeholder="your.name@university.edu"
+              required
+            />
+            <div class="invalid-feedback"></div>
+          </div>
         </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="password" class="form-label">Password</label>
+            <div class="input-group">
+              <input
+                type="password"
+                name="password"
+                id="password"
+                class="form-control"
+                placeholder="Create a strong password"
+                required
+              />
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                id="togglePassword"
+              >
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+            <div class="invalid-feedback"></div>
+            <div class="password-strength-meter mt-2">
+              <small class="text-muted"
+                >Password must contain: At least 8 characters, 1 uppercase
+                letter, 1 lowercase letter, a number and 1 special
+                character</small
+              >
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="confirm_password" class="form-label"
+              >Confirm Password</label
+            >
+            <div class="input-group">
+              <input
+                type="password"
+                name="confirm_password"
+                id="confirm_password"
+                class="form-control"
+                placeholder="Confirm your password"
+                required
+              />
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                id="toggleConfirmPassword"
+              >
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+            <div class="invalid-feedback"></div>
+          </div>
+        </div>
+        <!-- Rest of your form remains the same -->
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="department" class="form-label"
+              >Department/Faculty</label
+            >
+            <select
+              name="department"
+              id="department"
+              class="form-control"
+              required
+            >
+              <option value="">Select your department</option>
+              <option value="Computer Science">Computer Science</option>
+              <option value="Software Engineering">Software Engineering</option>
+              <option value="Cyber Security">Cyber Security</option>
+            </select>
+            <div class="invalid-feedback"></div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Role</label>
+            <div class="role-container">
+              <div class="d-flex align-items-center">
+                <div class="form-check me-3">
+                  <input
+                    type="radio"
+                    name="role"
+                    id="faculty"
+                    value="faculty"
+                    class="form-check-input"
+                    required
+                  />
+                  <label for="faculty" class="form-check-label">Faculty</label>
+                </div>
+                <div class="form-check me-3">
+                  <input
+                    type="radio"
+                    name="role"
+                    id="admin"
+                    value="admin"
+                    class="form-check-input"
+                  />
+                  <label for="admin" class="form-check-label">Admin</label>
+                </div>
+                <div class="form-check">
+                  <input
+                    type="radio"
+                    name="role"
+                    id="partner"
+                    value="external"
+                    class="form-check-input"
+                  />
+                  <label for="partner" class="form-check-label"
+                    >External Partner</label
+                  >
+                </div>
+              </div>
+              <div class="invalid-feedback"></div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12 mb-4">
+            <label for="profile_picture" class="form-label"
+              >Profile Picture</label
+            >
+            <input
+              type="file"
+              name="profile_picture"
+              id="profile_picture"
+              class="form-control"
+              required
+              accept="image/jpeg,image/png"
+            />
+            <div class="invalid-feedback"></div>
+            <small class="text-muted"
+              >Accepted formats: JPEG, PNG. Maximum size: 2MB</small
+            >
+
+            <!-- Preview Image -->
+            <div class="mt-2">
+              <img
+                id="profilePreview"
+                src="#"
+                alt="Profile Picture Preview"
+                class="img-fluid rounded d-none"
+                style="max-width: 200px; max-height: 200px;"
+              />
+            </div>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-success w-100" id="submitButton">
+          <span id="buttonText">Register Account</span>
+        </button>
+        <div class="footer-link text-center mt-3">
+          Already have an account?
+          <a href="{% url 'authentication:login' %}">Log in here</a>
+        </div>
+        <div class="text-center mt-3 text-muted">
+          For assistance, contact IT support at support@university.edu
+        </div>
+      </form>
     </div>
+  </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
-<!-- Include Font Awesome for icons -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
-
+{% endblock %} {% block extra_js %}
 <!-- Include your form validation script -->
+<script src="{% static 'js/svg-utils.js' %}"></script>
 <script src="{% static 'js/custom.js' %}"></script>
 
 <!-- Password toggle script -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const togglePassword = document.getElementById('togglePassword');
-    const passwordInput = document.getElementById('password');
+  document.addEventListener("DOMContentLoaded", function () {
+    console.log("Script loaded");
 
-    if (togglePassword && passwordInput) {
-        togglePassword.addEventListener('click', function(e) {
-            e.preventDefault();
-            // Toggle the type attribute
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            
-            // Toggle the icon
-            const icon = this.querySelector('i');
-            if (icon) {
-                icon.classList.toggle('fa-eye');
-                icon.classList.toggle('fa-eye-slash');
-            }
+    // Function to toggle password visibility
+    function setupPasswordToggle(passwordInput, toggleButton) {
+      if (passwordInput && toggleButton) {
+        toggleButton.addEventListener("click", function (e) {
+          e.preventDefault();
+          console.log("Toggle button clicked");
+
+          // Toggle password visibility
+          const type =
+            passwordInput.getAttribute("type") === "password"
+              ? "text"
+              : "password";
+          passwordInput.setAttribute("type", type);
+
+          // Toggle icon
+          const icon = this.querySelector("i");
+          if (icon) {
+            icon.classList.toggle("fa-eye");
+            icon.classList.toggle("fa-eye-slash");
+          }
         });
+      }
     }
-});
+
+    // Setup toggle for password field
+    const passwordInput = document.getElementById("password");
+    const togglePassword = document.getElementById("togglePassword");
+    setupPasswordToggle(passwordInput, togglePassword);
+
+    // Setup toggle for confirm password field
+    const confirmPasswordInput = document.getElementById("confirm_password");
+    const toggleConfirmPassword = document.getElementById(
+      "toggleConfirmPassword"
+    );
+    setupPasswordToggle(confirmPasswordInput, toggleConfirmPassword);
+
+    console.log("Password toggles initialized");
+  });
+
+  document.addEventListener("DOMContentLoaded", function () {
+    // File input and preview image elements
+    const profilePictureInput = document.getElementById("profile_picture");
+    const profilePreview = document.getElementById("profilePreview");
+
+    // Listen for changes in the file input field
+    profilePictureInput.addEventListener("change", function (event) {
+      const file = event.target.files[0];
+
+      // Ensure a file is selected and it's an image
+      if (file && (file.type === "image/jpeg" || file.type === "image/png")) {
+        const reader = new FileReader();
+
+        // Load the image file and set it as the src for the preview image
+        reader.onload = function (e) {
+          profilePreview.src = e.target.result;
+          profilePreview.classList.remove("d-none"); // Make the image visible
+        };
+
+        reader.readAsDataURL(file);
+      } else {
+        // If no valid file is selected, hide the preview image
+        profilePreview.src = "#";
+        profilePreview.classList.add("d-none");
+      }
+    });
+  });
 </script>
 {% endblock %}
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        alert('Script loaded'); // Debug alert 1
-        
-        const togglePassword = document.getElementById('togglePassword');
-        const passwordInput = document.getElementById('password');
-    
-        alert('Toggle button: ' + (togglePassword ? 'found' : 'not found')); // Debug alert 2
-        alert('Password input: ' + (passwordInput ? 'found' : 'not found')); // Debug alert 3
-    
-        if (togglePassword && passwordInput) {
-            togglePassword.addEventListener('click', function(e) {
-                alert('Button clicked'); // Debug alert 4
-                e.preventDefault();
-                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordInput.setAttribute('type', type);
-                
-                const icon = this.querySelector('i');
-                if (icon) {
-                    icon.classList.toggle('fa-eye');
-                    icon.classList.toggle('fa-eye-slash');
-                }
-            });
-        }
-    });
-</script>

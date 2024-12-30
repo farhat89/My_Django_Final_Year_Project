@@ -38,8 +38,8 @@ class User(AbstractUser):
     )
     role = models.CharField(
         max_length=20,
-        choices=ROLE_CHOICES,
-        default='faculty'
+        choices=ROLE_CHOICES
+        # default='faculty'
     )
     last_login_attempt = models.DateTimeField(null=True, blank=True)
     login_attempts = models.IntegerField(default=0)
