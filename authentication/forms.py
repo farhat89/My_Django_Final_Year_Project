@@ -44,6 +44,7 @@ class LoginForm(forms.Form):
         return cleaned_data
 
 
+
 class UserRegistrationForm(forms.ModelForm):
     full_name = forms.CharField(
         widget=forms.TextInput(attrs={

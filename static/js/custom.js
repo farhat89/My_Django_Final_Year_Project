@@ -340,6 +340,9 @@ document.addEventListener("DOMContentLoaded", () => {
     new RegistrationForm();
     registrationForm._initialized = true;
   }
+  function LoginForm(){
+    // ....
+ }
 
   if (loginForm && !loginForm._initialized) {
     new LoginForm();

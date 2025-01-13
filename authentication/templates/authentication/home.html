@@ -1,0 +1,179 @@
+{% extends 'authentication/base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg home-navbar fixed-top">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="{% url 'authentication:home' %}">
+            <i class="fas fa-graduation-cap me-2"></i>
+            EduShare
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link active fs-5" aria-current="page" href="{% url 'authentication:home' %}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link fs-5" aria-current="page" href="#features">Features</a>
+                    
+                </li>
+                {% comment %} <li class="nav-item">
+                    <a class="nav-link me-2" href="#">About Us</a>
+                </li> {% endcomment %}
+                <li class="nav-item">
+                    <a class="btn btn-primary me-4" href="{% url 'authentication:register' %}">Get Started</a>
+                </li>
+                <li class="nav-item">
+                    <a class="btn btn-outline-primary" href="{% url 'authentication:login' %}">Log In</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero-section position-relative">
+    <div class="container">
+        <div class="row min-vh-100 align-items-center">
+            <div class="col-lg-6">
+                <h2 class="fs-1 mb-4">Welcome to EduShare, Seamless Collaboration for Faculty Members</h2>
+                <p class="lead mb-4">Empowering academic collaboration with flexible file sharing and communication tools</p>
+                <div class="d-flex gap-3">
+                    <a href="{% url 'authentication:register' %}" class="btn btn-primary btn-lg">Get Started</a>
+                    <a href="{% url 'authentication:login' %}" class="btn btn-outline-primary btn-lg">Log In</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="hero-bg-overlay"></div>
+</section>
+
+<!-- Key Features Section -->
+<section id="features" class="features-section py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Key Features</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-share-alt text-primary fa-2x"></i>
+                        </div>
+                        <h3 class="h5">Effortless File Sharing</h3>
+                        <p class="text-muted">Share and organize academic materials with just a few clicks. Support for all file types.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-users text-primary fa-2x"></i>
+                        </div>
+                        <h3 class="h5">Real-Time Collaboration</h3>
+                        <p class="text-muted">Work together in real-time on documents, research papers, and presentations.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-shield-alt text-primary fa-2x"></i>
+                        </div>
+                        <h3 class="h5">Secure & Accessible</h3>
+                        <p class="text-muted">Access your files securely from anywhere with enterprise-grade security.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+{% comment %} <section class="testimonials-section py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5">What Faculty Members Say</h2>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="{% static 'images/avatar1.jpg' %}" alt="Professor" class="rounded-circle me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                            <div>
+                                <h5 class="mb-0">Dr. Smith</h5>
+                                <p class="text-muted mb-0">Professor of Computer Science</p>
+                            </div>
+                        </div>
+                        <p class="mb-0">"This platform has revolutionized how we manage our research files and reports within our department."</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="{% static 'images/avatar2.jpg' %}" alt="Professor" class="rounded-circle me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                            <div>
+                                <h5 class="mb-0">Prof. Jane</h5>
+                                <p class="text-muted mb-0">Department of Physics</p>
+                            </div>
+                        </div>
+                        <p class="mb-0">"The seamless collaboration features have given us peace of mind when sharing sensitive research data."</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section> {% endcomment %}
+
+<!-- Footer -->
+<footer class="bg-dark text-light py-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <h5>EduShare</h5>
+                <p class="small">Empowering academic collaboration worldwide</p>
+            </div>
+            <div class="col-md-2 mb-3">
+                <h5>Quick Links</h5>
+                <ul class="list-unstyled">
+                    {% comment %} <li><a href="#" class="text-light text-decoration-none">About Us</a></li> {% endcomment %}
+                    <li><a href="#features" aria-current="page" class="text-light text-decoration-none ">Features</a></li>
+                    <li><a href="#" class="text-light text-decoration-none">Contact Support</a></li>
+                </ul>
+            </div>
+            <div class="col-md-2 mb-3">
+                <h5>Legal</h5>
+                <ul class="list-unstyled">
+                    <li><a href="#" class="text-light text-decoration-none">Privacy Policy</a></li>
+                    <li><a href="#" class="text-light text-decoration-none">Terms of Service</a></li>
+                    {% comment %} <li><a href="#" class="text-light text-decoration-none">Security</a></li> {% endcomment %}
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <h5>Connect</h5>
+                <div class="d-flex gap-3">
+                    <a href="https://twitter.com" class="footer-social-link" target="_blank">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://linkedin.com" class="footer-social-link" target="_blank">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://facebook.com" class="footer-social-link" target="_blank">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <hr class="my-4">
+        <div class="text-center">
+            <p class="mb-0 small">© 2024 EduShare. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+{% endblock %}

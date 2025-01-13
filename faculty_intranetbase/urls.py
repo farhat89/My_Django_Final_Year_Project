@@ -23,7 +23,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('authentication.urls')),  # Authentication app URLs
-    path('', lambda request: redirect('authentication:login')),  # Redirect root to login
+    path('', lambda request: redirect('authentication:home')),  # Redirect root to login
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 

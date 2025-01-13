@@ -9,6 +9,9 @@ from django.urls import reverse
 import json
 from .forms import LoginForm, UserRegistrationForm
 
+def home(request):
+    return render(request, 'authentication/home.html')
+
 @csrf_protect
 def login_view(request):
     if request.method == 'POST':
@@ -117,3 +120,4 @@ def register_view(request):
 def logout_view(request):
     logout(request)
     return redirect(reverse('authentication:login'))
+
