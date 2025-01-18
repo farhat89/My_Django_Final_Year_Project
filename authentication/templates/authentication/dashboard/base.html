@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}FacultyShare{% endblock %}</title>
+    <title>{% block title %}EduShare{% endblock %}</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
@@ -15,6 +15,9 @@
     
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"> "
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
@@ -39,9 +42,10 @@
             
             <!-- Search Bar (visible on larger screens) -->
             <div class="d-none d-md-block w-50">
-                <input class="form-control" type="search" placeholder="Search files, collaborations, or users..." 
+                <input class="form-control search-input" type="search" placeholder="Search files, collaborations, or users..." 
                        aria-label="Search">
             </div>
+            <div class="search-results"></div>
             
             <!-- Right Navigation Items -->
             <div class="d-flex align-items-center">
@@ -69,32 +73,42 @@
                             {% endfor %}
                         </div>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item text-center" href="{% url 'all_notifications' %}">
+                        <a class="dropdown-item text-center" href="#">
                             View all notifications
-                        </a>
+                        </a> 
                     </div>
                 </div>
                 
                 <!-- User Profile Dropdown -->
-                <div class="dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" 
-                       aria-expanded="false">
-                        <img src="{% if user.profile.avatar %}{{ user.profile.avatar.url }}{% else %}
-                             {% static 'images/default-avatar.png' %}{% endif %}" 
-                             alt="Profile" class="rounded-circle" width="32" height="32">
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="{% url 'profile' %}">Profile</a></li>
-                        <li><a class="dropdown-item" href="{% url 'settings' %}">Settings</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <form method="post" action="{% url 'logout' %}">
-                                {% csrf_token %}
-                                <button type="submit" class="dropdown-item">Logout</button>
-                            </form>
-                        </li>
-                    </ul>
-                </div>
+<div class="dropdown">
+    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+       aria-expanded="false">
+        {% if user.profile_picture %}
+            <img src="{{ user.profile_picture.url }}" 
+                 alt="Profile" 
+                 class="rounded-circle" 
+                 width="32" 
+                 height="32">
+        {% else %}
+            <!-- Fallback to initials if no profile picture -->
+            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" 
+                 style="width: 32px; height: 32px; font-size: 14px;">
+                {{ user.get_full_name|default:user.email|make_list|first|upper }}
+            </div>
+        {% endif %}
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end">
+        <li><a class="dropdown-item" href="{% url 'authentication:profile' %}">Profile</a></li>
+        <li><a class="dropdown-item" href="#">Settings</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li>
+            <form method="post" action="{% url 'authentication:logout' %}" id="logout-form">
+                {% csrf_token %}
+                <button type="submit" class="dropdown-item">Logout</button>
+            </form>
+        </li>
+    </ul>
+</div>
             </div>
         </div>
     </nav>
@@ -107,38 +121,39 @@
                 {% block sidebar %}
                 <div class="position-sticky pt-3">
                     <div class="logo mb-4 px-3">
-                        <h4>FacultyShare</h4>
+                        <h4><i class="fas fa-graduation-cap me-2"></i>
+                            EduShare</h4>
                     </div>
                     <ul class="nav flex-column">
                         <li class="nav-item">
                             <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
-                               href="{% url 'dashboard' %}">
+                               href="{% url 'authentication:dashboard' %}">
                                 <i class="bi bi-house-door"></i> Dashboard
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request.resolver_match.url_name == 'my_files' %}active{% endif %}" 
-                               href="{% url 'my_files' %}">
+                               href="#">
                                 <i class="bi bi-file-earmark"></i> My Files
-                            </a>
+                            </a> 
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request.resolver_match.url_name == 'collaborations' %}active{% endif %}" 
-                               href="{% url 'collaborations' %}">
+                               href="#">
                                 <i class="bi bi-people"></i> Collaborations
-                            </a>
+                            </a> 
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request.resolver_match.url_name == 'shared_files' %}active{% endif %}" 
-                               href="{% url 'shared_files' %}">
+                               href="#">
                                 <i class="bi bi-share"></i> Shared Files
-                            </a>
+                            </a> 
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}" 
-                               href="{% url 'settings' %}">
+                               href="#">
                                 <i class="bi bi-gear"></i> Settings
-                            </a>
+                            </a> 
                         </li>
                     </ul>
                 </div>
@@ -168,9 +183,11 @@
     {% comment %} <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> {% endcomment %}
     
     <!-- Custom JavaScript -->
-    <script src="{% static 'js/base.js' %}"></script>
+    {% comment %} <script src="{% static 'js/base.js' %}"></script> {% endcomment %}
     
     <!-- Additional JavaScript blocks for specific pages -->
-    {% block extra_js %}{% endblock %}
+    {% block extra_js %}
+    <script src="{% static 'js/dashboard.js' %}"></script>
+    {% endblock %}
 </body>
 </html>

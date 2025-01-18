@@ -60,10 +60,19 @@ class UserRegistrationForm(forms.ModelForm):
         }),
         label="Confirm Password"
     )
+
+    department = forms.ChoiceField(
+        choices=User.DEPARTMENT_CHOICES,  # Use choices from model
+        required=True,
+        widget=forms.Select(attrs={
+            'class': 'form-control',
+            'id': 'department'
+        })
+    )
     
     class Meta:
         model = User
-        fields = ['email', 'password', 'role', 'profile_picture']
+        fields = ['email', 'password', 'role', 'department', 'profile_picture']
         widgets = {
             'email': forms.EmailInput(attrs={
                 'class': 'form-control',
@@ -144,6 +153,11 @@ class UserRegistrationForm(forms.ModelForm):
             user.first_name = full_name[0]
             user.last_name = ' '.join(full_name[1:]) if len(full_name) > 1 else ''
         
+        # Explicitly set department
+        user.department = self.cleaned_data.get('department')
+        print(f"Setting department to: {user.department}")  # Debug print
+
         if commit:
             user.save()
+            print(f"After save, department is: {user.department}")  # Debug print
         return user

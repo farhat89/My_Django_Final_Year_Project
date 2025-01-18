@@ -1,0 +1,90 @@
+{% extends 'authentication/dashboard/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm" style="max-width: 800px; margin: 0 auto;">
+        <div class="card-body p-4">
+            <h2 class="card-title mb-4 text-primary">Profile Information</h2>
+            
+            <div class="row g-4">
+                <!-- Profile Picture Column -->
+                <div class="col-md-4 text-center">
+                    <div class="profile-picture-container mb-3">
+                        {% if user.profile_picture %}
+                            <img src="{{ user.profile_picture.url }}"
+                                 alt="Profile Picture"
+                                 class="rounded-circle img-thumbnail shadow"
+                                 style="width: 180px; height: 180px; object-fit: cover;">
+                        {% else %}
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto shadow"
+                                 style="width: 180px; height: 180px; font-size: 48px;">
+                                {{ user.get_full_name|default:user.email|make_list|first|upper }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <form method="post" enctype="multipart/form-data" id="profile-photo-form">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <input type="file"
+                                   name="profile_picture"
+                                   id="profile_picture"
+                                   class="form-control"
+                                   accept="image/*"
+                                   style="display: none;">
+                            <label for="profile_picture" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-camera-fill me-2"></i>Change Photo
+                            </label>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Profile Info Column -->
+                <div class="col-md-8">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded">
+                                <label class="form-label text-muted small mb-1">Full Name</label>
+                                <p class="form-control-static mb-0 fw-medium">{{ user.get_full_name }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded">
+                                <label class="form-label text-muted small mb-1">Department</label>
+                                <p class="form-control-static mb-0 fw-medium">{{ user.department|default:"Not set" }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded">
+                                <label class="form-label text-muted small mb-1">Email</label>
+                                <p class="form-control-static mb-0 fw-medium">{{ user.email }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded">
+                                <label class="form-label text-muted small mb-1">Role</label>
+                                <p class="form-control-static mb-0 fw-medium">{{ user.get_role_display }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('profile_picture').addEventListener('change', function() {
+    if (this.files && this.files[0]) {
+        const fileSize = this.files[0].size / 1024 / 1024; // in MB
+        if (fileSize > 2) {
+            alert('File size exceeds 2MB. Please choose a smaller file.');
+            this.value = '';
+            return;
+        }
+        document.getElementById('profile-photo-form').submit();
+    }
+});
+</script>
+{% endblock %}

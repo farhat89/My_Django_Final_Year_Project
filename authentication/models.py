@@ -3,6 +3,7 @@
 # Create your models here.
 # models.py
 from django.db import models
+from django.contrib.auth.models import User
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import EmailValidator
 from django.core.exceptions import ValidationError
@@ -53,6 +54,19 @@ class User(AbstractUser):
         help_text="Upload a JPEG or PNG image (max size: 2MB)."
     )
 
+    DEPARTMENT_CHOICES = [
+        ('Computer Science', 'Computer Science'),
+        ('Software Engineering', 'Software Engineering'),
+        ('Cyber Security', 'Cyber Security'),
+    ]
+
+    department = models.CharField(
+        max_length=100,
+        choices=DEPARTMENT_CHOICES,
+        blank=True,
+        null=True
+    )
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'role']
 
@@ -77,3 +91,32 @@ class User(AbstractUser):
         if self.profile_picture and os.path.isfile(self.profile_picture.path):
             os.remove(self.profile_picture.path)
         super().delete(*args, **kwargs)
+
+class File(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    file = models.FileField(upload_to='files/')
+    file_size = models.BigIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+class Collaboration(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    file = models.ForeignKey(File, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.file.name}"
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.TextField()
+    icon = models.CharField(max_length=50)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.message[:50]}"

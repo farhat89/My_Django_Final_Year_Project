@@ -39,4 +39,23 @@ urlpatterns = [
              template_name='authentication/password_reset_complete.html'
          ),
          name='password_reset_complete'),
+
+    path('dashboard/', views.dashboard, name='dashboard'),
+    
+    path('notifications/mark-read/<int:notification_id>/', 
+         views.mark_notification_read, name='mark_notification_read'),
+         
+    path('notifications/mark-all-read/', 
+         views.mark_all_notifications_read, name='mark_all_notifications_read'),
+
+    path('api/upload/', views.upload_file, name='upload_file'),
+
+    path('api/recent-activity/', views.recent_activity, name='recent_activity'),
+    
+    path('api/recent-files/', views.recent_files, name='recent_files'),
+    
+    path('api/storage-usage/', views.storage_usage, name='storage_usage'),
+
+    path('profile/', views.profile_view, name='profile'),
+    path('search-files/', views.search_files, name='search_files'),    
 ]
