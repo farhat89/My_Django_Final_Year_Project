@@ -3,146 +3,123 @@
 {% load static %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <!-- Sidebar -->
-        <div class="col-md-2 bg-light sidebar">
-            <div class="sidebar-sticky pt-3">
-                <div class="logo mb-4">
-                    <h4><i class="fas fa-graduation-cap me-2"></i>
-                        EduShare</h4>
-                </div>
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{% url 'authentication:dashboard' %}">
-                            <i class="bi bi-house-door"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <i class="bi bi-file-earmark"></i> My Files
-                        </a> 
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <i class="bi bi-people"></i> Collaborations
-                        </a> 
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <i class="bi bi-share"></i> Shared Files
-                        </a> 
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <i class="bi bi-gear"></i> Settings
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
+<div class="welcome-section">
+    <h1>Welcome back, Dr. {{ request.user.last_name }}!</h1>
+    <p class="text-muted">Here's what's happening in your workspace</p>
+</div>
 
-        <!-- Main Content -->
-        <main class="col-md-10 ms-sm-auto px-4">
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
-                <h1>Welcome back, Dr. {{ request.user.last_name }}!</h1>
-                <div class="search-bar">
-                    <input type="text" class="form-control" placeholder="Search files, collaborations, or users...">
-                </div>
-            </div>
-
-            <!-- Quick Stats Cards -->
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card">
+<div class="row g-4 mb-4">
+    <!-- Upload Files Card -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="card quick-action-card">
             <div class="card-body">
-                <h5 class="card-title"><i class="fas fa-upload me-2"></i>Upload Files</h5>
-                <p class="card-text">Share documents with your team</p>
-                <button class="btn btn-primary">Quick Upload</button>
+                <div class="mb-3">
+                    <i class="fas fa-upload fa-lg text-primary"></i>
+                </div>
+                <h5 class="card-title mb-2">Upload Files</h5>
+                <p class="card-text text-muted mb-3">Share documents with your team</p>
+                <button class="btn btn-primary px-4">Quick Upload</button>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card">
+
+    <!-- Collaborations Card -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="card quick-action-card">
             <div class="card-body">
-                <h5 class="card-title"><i class="fas fa-users me-2"></i>Collaborations</h5>
-                <p class="card-text">{{ collaborations }} active projects</p>
+                <div class="mb-3">
+                    <i class="fas fa-users fa-lg text-primary"></i>
+                </div>
+                <h5 class="card-title mb-2">Collaborations</h5>
+                <p class="card-text text-muted">{{ collaborations }} active projects</p>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card">
+
+    <!-- Storage Card -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="card quick-action-card">
             <div class="card-body">
-                <h5 class="card-title"><i class="fas fa-database me-2"></i>Storage Used</h5>
+                <div class="mb-3">
+                    <i class="fas fa-database fa-lg text-primary"></i>
+                </div>
+                <h5 class="card-title mb-2">Storage Used</h5>
                 <div class="progress">
-                    <div class="progress-bar" role="progressbar"
+                    <div class="progress-bar" role="progressbar" 
                          style="width: {{ storage_used.percentage }}%"
                          aria-valuenow="{{ storage_used.percentage }}"
                          aria-valuemin="0" aria-valuemax="100">
                     </div>
                 </div>
-                <p class="card-text mt-2">
+                <p class="card-text text-muted mt-2">
                     {{ storage_used.used|filesizeformat }} of {{ storage_used.total|filesizeformat }}
                 </p>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card">
+
+    <!-- Recent Files Card -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="card quick-action-card">
             <div class="card-body">
-                <h5 class="card-title"><i class="fas fa-clock me-2"></i>Recent Files</h5>
-                <p class="card-text">View recent activities</p>
+                <div class="mb-3">
+                    <i class="fas fa-clock fa-lg text-primary"></i>
+                </div>
+                <h5 class="card-title mb-2">Recent Files</h5>
+                <p class="card-text text-muted">View recent activities</p>
             </div>
         </div>
     </div>
 </div>
 
-            <!-- Recent Activities and Notifications -->
-            <div class="row">
-                <div class="col-md-8">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <h5 class="card-title">Recent Activities</h5>
-                                <a href="#" class="text-primary">View All</a>
-                            </div>
-                            <div class="activities-list">
-                                {% for activity in recent_activities %}
-                                <div class="activity-item">
-                                    <div class="activity-icon">
-                                        <i class="bi bi-{{ activity.icon }}"></i>
-                                    </div>
-                                    <div class="activity-details">
-                                        <p>{{ activity.description }}</p>
-                                        <small class="text-muted">{{ activity.timestamp|timesince }} ago</small>
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
+<!-- Activities and Notifications -->
+<div class="row g-4">
+    <!-- Recent Activities -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="card-title m-0">Recent Activities</h5>
+                    <a href="#" class="text-primary text-decoration-none">View All</a>
                 </div>
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <h5 class="card-title">Notifications</h5>
-                                <a href="#" class="text-primary">Mark All Read</a>
-                            </div>
-                            {% for notification in notifications %}
-                            <div class="notification-item">
-                                <i class="bi bi-{{ notification.icon }}"></i>
-                                <div class="notification-content">
-                                    <p>{{ notification.message }}</p>
-                                    <small class="text-muted">{{ notification.timestamp|timesince }} ago</small>
-                                </div>
-                            </div>
-                            {% endfor %}
+                <div class="activities-list">
+                    {% for activity in recent_activities %}
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-{{ activity.icon }}"></i>
+                        </div>
+                        <div class="activity-details">
+                            <p class="mb-1">{{ activity.description }}</p>
+                            <small class="text-muted">{{ activity.timestamp|timesince }} ago</small>
                         </div>
                     </div>
+                    {% endfor %}
                 </div>
             </div>
-        </main>
+        </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="card-title m-0">Notifications</h5>
+                    <a href="#" class="text-primary text-decoration-none">Mark All Read</a>
+                </div>
+                {% for notification in notifications %}
+                <div class="notification-item">
+                    <div class="notification-icon {{ notification.type|default:'info' }}">
+                        <i class="fas fa-{{ notification.icon }}"></i>
+                    </div>
+                    <div class="notification-content">
+                        <p class="mb-1">{{ notification.message }}</p>
+                        <small class="text-muted">{{ notification.timestamp|timesince }} ago</small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
