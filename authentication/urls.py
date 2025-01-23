@@ -45,8 +45,7 @@ urlpatterns = [
     path('notifications/mark-read/<int:notification_id>/', 
          views.mark_notification_read, name='mark_notification_read'),
          
-    path('notifications/mark-all-read/', 
-         views.mark_all_notifications_read, name='mark_all_notifications_read'),
+    path('api/notifications/mark-all-read/', views.mark_all_notifications_read, name='mark_all_notifications_read'),
 
     path('api/upload/', views.upload_file, name='upload_file'),
 

@@ -102,6 +102,10 @@ class File(models.Model):
 
     def __str__(self):
         return self.name
+    
+    def get_file_type(self):
+        """Return the file extension for icon mapping"""
+        return self.name.split('.')[-1].lower() if '.' in self.name else ''
 
 class Collaboration(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

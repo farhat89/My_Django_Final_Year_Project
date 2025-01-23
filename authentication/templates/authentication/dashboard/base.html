@@ -42,7 +42,7 @@
             
             <!-- Brand Logo for Mobile -->
             <a class="navbar-brand d-lg-none ms-2" href="{% url 'authentication:dashboard' %}">
-                <i class="fas fa-graduation-cap"></i> EduShare
+                <i style="color:#1a73e8;" class="fas fa-graduation-cap"></i> EduShare
             </a>
             
             <!-- Search Bar -->
@@ -135,7 +135,7 @@
         <nav id="sidebarMenu" class="sidebar collapse d-lg-block">
             <div class="position-sticky">
                 <div class="px-3 mb-4 d-none d-lg-block">
-                    <h4 class="mb-0"><i class="fas fa-graduation-cap me-2"></i>EduShare</h4>
+                    <h4 style="color:#1a73e8" class="mb-0"><i class="fas fa-graduation-cap me-2"></i>EduShare</h4>
                 </div>
                 <ul class="nav flex-column">
                     <li class="nav-item">
@@ -173,7 +173,7 @@
         </nav>
 
         <!-- Main Content -->
-        <main class="flex-grow-1 p-4">
+        <main style="margin-left: 0.5rem;" class="flex-grow-1 p-4">
             {% if messages %}
                 {% for message in messages %}
                 <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">

@@ -248,7 +248,8 @@ def recent_files(request):
             'id': file.id,
             'name': file.name,
             'size': format_file_size(file.file_size),
-            'created_at': file.created_at.isoformat()
+            'created_at': file.created_at.isoformat(),
+            'icon': get_file_icon_name(file.get_file_type())
         } for file in files]
     })
 
@@ -271,32 +272,60 @@ def storage_usage(request):
     })
 
 def get_recent_activities(user):
-    """
-    Helper function to get user's recent activities
-    """
-    # Get recent file activities
+    """Helper function to get user's recent activities"""
     recent_files = File.objects.filter(user=user).order_by('-modified_at')[:5]
     
     activities = []
     for file in recent_files:
+        file_type = file.get_file_type()
+        icon = get_file_icon_name(file_type)  
         activities.append({
             'description': f"Updated file: {file.name}",
             'timestamp': file.modified_at,
-            'icon': 'file-earmark-text'
+            'icon': icon,
+            'type': 'file'  # Add type for styling
         })
     
-    # Get recent collaborations
     recent_collabs = Collaboration.objects.filter(user=user).order_by('-created_at')[:3]
     for collab in recent_collabs:
         activities.append({
             'description': f"Started collaboration on: {collab.file.name}",
             'timestamp': collab.created_at,
-            'icon': 'people'
+            'icon': 'users',  # Font Awesome icon name
+            'type': 'collaboration'
         })
     
-    # Sort activities by timestamp
     activities.sort(key=lambda x: x['timestamp'], reverse=True)
     return activities[:5]  # Return only the 5 most recent activities
+
+def get_file_icon_name(extension):
+    """Map file extensions to Font Awesome icon names"""
+    icon_map = {
+        'pdf': 'file-pdf',
+        'doc': 'file-word',
+        'docx': 'file-word',
+        'xls': 'file-excel',
+        'xlsx': 'file-excel',
+        'ppt': 'file-powerpoint',
+        'pptx': 'file-powerpoint',
+        'jpg': 'file-image',
+        'jpeg': 'file-image',
+        'png': 'file-image',
+        'Audio': 'file-audio',
+        'mp3': 'file-audio',
+        'mp4': 'file-video',
+        'avi': 'file-video',
+         'Video': 'file-video',
+        'gif': 'file-image',
+        'zip': 'file-archive',
+        'rar': 'file-archive',
+        'html': 'file-code',
+        'css': 'file-code',
+        'js': 'file-code',
+        'py': 'file-code',
+        'txt': 'file-alt'
+    }
+    return icon_map.get(extension.lower(), 'file')  # Default to 'file' if extension not found
 
 def format_file_size(size_in_bytes):
     """

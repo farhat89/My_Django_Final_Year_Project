@@ -62,14 +62,31 @@
     <div class="col-sm-6 col-xl-3">
         <div class="card quick-action-card">
             <div class="card-body">
+                <!-- Header with Icon and Title -->
                 <div class="mb-3">
                     <i class="fas fa-clock fa-lg text-primary"></i>
                 </div>
                 <h5 class="card-title mb-2">Recent Files</h5>
                 <p class="card-text text-muted">View recent activities</p>
+
+                <!-- Recent Files Section -->
+                <div class="recent-files-section">
+                    {% for file in recent_files %}
+                    <div class="recent-file-item d-flex align-items-center p-2 border-bottom">
+                        <div class="me-3">
+                            <i class="fas fa-{{ file.icon }} text-primary fa-lg"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-medium">{{ file.name }}</div>
+                            <small class="text-muted">{{ file.modified }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </div>
+
 </div>
 
 <!-- Activities and Notifications -->
@@ -85,7 +102,7 @@
                 <div class="activities-list">
                     {% for activity in recent_activities %}
                     <div class="activity-item">
-                        <div class="activity-icon">
+                        <div class="activity-icon {{ activity.type|default:'info' }}">
                             <i class="fas fa-{{ activity.icon }}"></i>
                         </div>
                         <div class="activity-details">
@@ -105,7 +122,7 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h5 class="card-title m-0">Notifications</h5>
-                    <a href="#" class="text-primary text-decoration-none">Mark All Read</a>
+                    <a href="#" class="text-primary text-decoration-none" data-action="mark-all-read">Mark All Read</a>
                 </div>
                 {% for notification in notifications %}
                 <div class="notification-item">
