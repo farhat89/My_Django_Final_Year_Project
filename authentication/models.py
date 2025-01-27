@@ -124,3 +124,14 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.message[:50]}"
+    
+    
+class SharedFile(models.Model):
+    file = models.ForeignKey(File, on_delete=models.CASCADE)
+    shared_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='shared_by')
+    shared_with = models.ForeignKey(User, on_delete=models.CASCADE, related_name='shared_with')
+    permission = models.CharField(max_length=10, choices=[('view', 'View'), ('edit', 'Edit')])
+    shared_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.file.name} shared by {self.shared_by.email} with {self.shared_with.email}"    

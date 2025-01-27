@@ -1,0 +1,37 @@
+/* static/css/my_files.css */
+.my-files-section {
+    padding: 20px;
+}
+
+.storage-bar {
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.files-table {
+    margin-top: 20px;
+}
+
+.files-table table {
+    width: 100%;
+}
+
+.files-table th,
+.files-table td {
+    padding: 12px;
+    text-align: left;
+}
+
+.files-table th {
+    background-color: #f8f9fa;
+}
+
+.files-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+.btn-sm {
+    padding: 5px 10px;
+    font-size: 12px;
+}

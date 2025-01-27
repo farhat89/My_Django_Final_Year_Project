@@ -1,0 +1,15 @@
+<!-- templates/authentication/dashboard/view_file.html -->
+
+{% extends 'authentication/dashboard/base.html' %}
+
+{% block content %}
+<div class="file-details-container">
+    <h2>{{ file.name }}</h2>
+    <p><strong>File Size:</strong> {{ file.file_size|filesizeformat }}</p>
+    <p><strong>Uploaded On:</strong> {{ file.created_at|date:"M d, Y" }}</p>
+    <p><strong>Last Modified:</strong> {{ file.modified_at|date:"M d, Y" }}</p>
+    
+    <!-- Add a link to download the file -->
+    <a href="{% url 'authentication:download_file' file.id %}" class="btn btn-primary">Download</a>
+</div>
+{% endblock %}

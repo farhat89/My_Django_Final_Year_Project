@@ -1,0 +1,174 @@
+<!-- templates/authentication/dashboard/shared_files.html -->
+
+{% extends 'authentication/dashboard/base.html' %}
+
+{% block content %}
+<style>
+    /* Custom CSS for Shared Files Icons */
+    .card-title i.fas {
+        font-size: 1.5rem; /* Adjust the size of the icons */
+        color: #1a73e8; /* Blue color for the icons */
+        margin-right: 0.5rem; /* Space between icon and text */
+        vertical-align: middle; /* Align the icon with the text */
+    }
+
+    /* Style for icons in the card headers */
+    .card-header .card-title i.fas {
+        font-size: 1.25rem; /* Slightly smaller size for card headers */
+        color: #1a73e8; /* Blue color for the icons */
+        margin-right: 0.5rem; /* Space between icon and text */
+        vertical-align: middle; /* Align the icon with the text */
+    }
+
+    /* Optional: Add a subtle hover effect for icons */
+    .card-title i.fas:hover,
+    .card-header .card-title i.fas:hover {
+        color: #1557a3; /* Darker blue on hover */
+        transition: color 0.3s ease; /* Smooth transition */
+    }
+</style>
+
+<div class="shared-files-container">
+    <h3 class="mb-4">Shared Files</h3>
+    
+    <!-- Total Shared Files and Counts Section -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-share-alt me-2"></i> <!-- Icon for Total Shared Files -->
+                        Total Shared Files
+                    </h5>
+                    <p class="card-text display-6">{{ shared_by_me|length|add:shared_with_me|length }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-upload me-2"></i> <!-- Icon for Shared by Me -->
+                        Shared by Me
+                    </h5>
+                    <p class="card-text display-6">{{ shared_by_me|length }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-download me-2"></i> <!-- Icon for Shared with Me -->
+                        Shared with Me
+                    </h5>
+                    <p class="card-text display-6">{{ shared_with_me|length }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input type="text" id="searchFiles" class="form-control" placeholder="Search files...">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select id="filterType" class="form-select">
+                <option value="">All Types</option>
+                <option value="pdf">PDF</option>
+                <option value="docx">Word</option>
+                <option value="xlsx">Excel</option>
+                <option value="pptx">PowerPoint</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select id="sortBy" class="form-select">
+                <option value="date">Sort by Date</option>
+                <option value="name">Sort by Name</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Shared by Me Card -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-upload me-2"></i> <!-- Icon for Shared by Me -->
+                Shared by Me
+            </h5>
+            <span class="badge bg-primary">{{ shared_by_me|length }}</span>
+        </div>
+        <div class="card-body">
+            {% for shared_file in shared_by_me %}
+            <div class="shared-file-item mb-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">{{ shared_file.file.name }}</h6>
+                        <small class="text-muted">Shared with {{ shared_file.shared_with.email }} on {{ shared_file.shared_at|date:"M d, Y" }}</small>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary btn-sm me-2" onclick="downloadFile({{ shared_file.file.id }})">Download</button>
+                        <button class="btn btn-danger btn-sm" onclick="removeSharedAccess({{ shared_file.id }})">Remove Access</button>
+                    </div>
+                </div>
+                <hr class="my-2"> <!-- Blue line separator -->
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Shared with Me Card -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-download me-2"></i> <!-- Icon for Shared with Me -->
+                Shared with Me
+            </h5>
+            <span class="badge bg-primary">{{ shared_with_me|length }}</span>
+        </div>
+        <div class="card-body">
+            {% for shared_file in shared_with_me %}
+            <div class="shared-file-item mb-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">{{ shared_file.file.name }}</h6>
+                        <small class="text-muted">Shared by {{ shared_file.shared_by.email }} on {{ shared_file.shared_at|date:"M d, Y" }}</small>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary btn-sm" onclick="downloadFile({{ shared_file.file.id }})">Download</button>
+                    </div>
+                </div>
+                <hr class="my-2"> <!-- Blue line separator -->
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+function downloadFile(fileId) {
+    window.location.href = `/download-file/${fileId}/`;
+}
+
+function removeSharedAccess(sharedFileId) {
+    fetch(`/remove-shared-access/${sharedFileId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': CSRF_TOKEN,
+            'Content-Type': 'application/json'
+        }
+    }).then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              window.location.reload();
+          } else {
+              alert('Failed to remove shared access.');
+          }
+      });
+}
+</script>
+{% endblock %}

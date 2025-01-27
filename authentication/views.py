@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
@@ -12,7 +12,14 @@ from django.db.models import Sum
 import json
 from django.core.exceptions import ValidationError
 from .forms import LoginForm, UserRegistrationForm
-from .models import File, Collaboration, Notification
+from .models import File, Collaboration, Notification, SharedFile
+from django.core.paginator import Paginator
+from django.http import HttpResponse, FileResponse
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+from django.core.mail import send_mail
+from django.conf import settings
+import os
 import mimetypes
 
 def home(request):
@@ -400,3 +407,180 @@ def search_files(request):
             'created_at': file.created_at.strftime('%Y-%m-%d %H:%M')
         } for file in files]
     })
+
+# my_files views
+@login_required
+def my_files(request):
+    # Get the list of files for the current user
+    files = File.objects.filter(user=request.user).order_by('-created_at')
+    
+    # Paginate the files (10 per page)
+    paginator = Paginator(files, 10)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
+    # Format file data for the template
+    formatted_files = [{
+        'id': file.id,
+        'name': file.name,
+        'size': format_file_size(file.file_size),
+        'modified': file.modified_at.strftime('%b %d, %Y')
+    } for file in page_obj]
+
+    context = {
+        'files': formatted_files,
+        'storage_used': {
+            'used': File.objects.filter(user=request.user).aggregate(total=Sum('file_size'))['total'] or 0,
+            'total': 5 * 1024 * 1024 * 1024,  # 5GB in bytes
+            'percentage': (File.objects.filter(user=request.user).aggregate(total=Sum('file_size'))['total'] or 0) / (5 * 1024 * 1024 * 1024) * 100,
+            'used_formatted': format_file_size(File.objects.filter(user=request.user).aggregate(total=Sum('file_size'))['total'] or 0),
+            'total_formatted': format_file_size(5 * 1024 * 1024 * 1024)
+        }
+    }
+
+    return render(request, 'authentication/dashboard/my_files.html', context)
+
+# File download and delete views
+@login_required
+def download_file(request, file_id):
+    try:
+        file = File.objects.get(id=file_id, user=request.user)
+        file_path = file.file.path
+
+        if os.path.exists(file_path):
+            # Use FileResponse to stream the file to the user
+            response = FileResponse(open(file_path, 'rb'))
+            response['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_path)}"'
+            return response
+        else:
+            return JsonResponse({'success': False, 'message': 'File not found.'}, status=404)
+    except File.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'File not found.'}, status=404)
+
+@login_required
+@require_http_methods(["DELETE"])
+def delete_file(request, file_id):
+    try:
+        file = File.objects.get(id=file_id, user=request.user)
+        file_path = file.file.path
+
+        # Delete the file from the file system
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
+        # Delete the file record from the database
+        file.delete()
+
+        return JsonResponse({'success': True})
+    except File.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'File not found.'}, status=404)
+    
+#share file views
+@login_required
+@require_http_methods(["POST"])
+def share_file(request, file_id):
+    try:
+        file = File.objects.get(id=file_id, user=request.user)
+        data = json.loads(request.body)
+        emails = data.get('emails', [])
+        access_permission = data.get('access_permission', 'view')
+
+        # Send emails to the recipients (placeholder logic)
+        for email in emails:
+            send_mail(
+                subject=f'File Shared: {file.name}',
+                message=f'{request.user.email} has shared a file with you. Access permission: {access_permission}.',
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                fail_silently=False,
+            )
+
+        # Save the shared file record (placeholder logic)
+        # You can create a model to store shared file records if needed.
+
+        return JsonResponse({'success': True})
+    except File.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'File not found.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+
+@login_required
+def shared_files(request):
+    shared_by_me = SharedFile.objects.filter(shared_by=request.user)
+    shared_with_me = SharedFile.objects.filter(shared_with=request.user)
+    
+    context = {
+        'shared_by_me': shared_by_me,
+        'shared_with_me': shared_with_me,
+    }
+    return render(request, 'authentication/dashboard/shared_files.html', context)
+
+@login_required
+@require_http_methods(["POST"])
+def remove_shared_access(request, shared_file_id):
+    try:
+        shared_file = SharedFile.objects.get(id=shared_file_id, shared_by=request.user)
+        shared_file.delete()
+        return JsonResponse({'success': True})
+    except SharedFile.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Shared file not found.'}, status=404)
+    
+#view file views
+@login_required
+def view_file(request, file_id):
+    # Fetch the file from the database
+    file = get_object_or_404(File, id=file_id, user=request.user)
+    
+    # Render a template to display the file details
+    return render(request, 'authentication/dashboard/view_file.html', {'file': file})
+
+#view file views in browser
+@login_required
+def view_file(request, file_id):
+    # Fetch the file from the database
+    file = get_object_or_404(File, id=file_id, user=request.user)
+    
+    # Get the file path
+    file_path = file.file.path
+    
+    # Check if the file exists
+    if not os.path.exists(file_path):
+        return HttpResponse("File not found.", status=404)
+    
+    # Determine the MIME type of the file
+    mime_type, _ = mimetypes.guess_type(file_path)
+    
+    # If the MIME type is unknown, default to 'application/octet-stream'
+    if mime_type is None:
+        mime_type = 'application/octet-stream'
+    
+    # Use FileResponse to stream the file content
+    response = FileResponse(open(file_path, 'rb'), content_type=mime_type)
+    
+    # Set the Content-Disposition header to inline (for viewing in the browser)
+    response['Content-Disposition'] = f'inline; filename="{os.path.basename(file_path)}"'
+    
+    # Enable range requests for large files (e.g., videos)
+    response['Accept-Ranges'] = 'bytes'
+    return response
+    
+# api_shared_files views
+@login_required
+def api_shared_files(request):
+    page = int(request.GET.get('page', 1))
+    per_page = 10
+    shared_by_me = SharedFile.objects.filter(shared_by=request.user)
+    shared_with_me = SharedFile.objects.filter(shared_with=request.user)
+    shared_files = list(shared_by_me) + list(shared_with_me)
+    shared_files = sorted(shared_files, key=lambda x: x.shared_at, reverse=True)
+    paginator = Paginator(shared_files, per_page)
+    page_obj = paginator.get_page(page)
+    
+    files = [{
+        'id': sf.file.id,
+        'name': sf.file.name,
+        'shared_at': sf.shared_at.strftime('%b %d, %Y'),
+    } for sf in page_obj]
+    
+    return JsonResponse({'files': files})    
