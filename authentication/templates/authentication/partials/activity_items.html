@@ -1,0 +1,26 @@
+{% for activity in activities %}
+<div class="update-item">
+    <div class="d-flex align-items-start">
+        <div class="avatar-sm me-3">
+            {% if activity.user.profile_picture %}
+            <img src="{{ activity.user.profile_picture.url }}" 
+                 class="rounded-circle participant-avatar" 
+                 alt="{{ activity.user.get_full_name }}">
+            {% else %}
+            <div class="rounded-circle bg-primary text-white d-flex 
+                align-items-center justify-content-center participant-avatar">
+                {{ activity.user.get_full_name|default:activity.user.email|make_list|first|upper }}
+            </div>
+            {% endif %}
+        </div>
+        <div class="flex-grow-1">
+            <p class="mb-1 small">
+                <strong>{{ activity.user.get_full_name }}</strong> 
+                {{ activity.get_activity_type_display }}
+                {% if activity.details %}<span class="text-muted">- {{ activity.details }}</span>{% endif %}
+            </p>
+            <small class="text-muted">{{ activity.created_at|timesince }} ago</small>
+        </div>
+    </div>
+</div>
+{% endfor %}

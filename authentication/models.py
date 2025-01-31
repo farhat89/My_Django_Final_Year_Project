@@ -108,13 +108,37 @@ class File(models.Model):
         return self.name.split('.')[-1].lower() if '.' in self.name else ''
 
 class Collaboration(models.Model):
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('pending', 'Pending'),
+        ('archived', 'Archived')
+    ]
+    
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    file = models.ForeignKey(File, on_delete=models.CASCADE)
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    file = models.ForeignKey(File, on_delete=models.SET_NULL, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    participants = models.ManyToManyField(User, related_name='collaborations')
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.user.username} - {self.file.name}"
+        return self.title
 
+class CollaborationActivity(models.Model):
+    ACTIVITY_TYPES = [
+        ('file_add', 'File Added'),
+        ('comment', 'Comment'),
+        ('join', 'Participant Joined')
+    ]
+    
+    collaboration = models.ForeignKey(Collaboration, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    activity_type = models.CharField(max_length=20, choices=ACTIVITY_TYPES)
+    details = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
 class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     message = models.TextField()

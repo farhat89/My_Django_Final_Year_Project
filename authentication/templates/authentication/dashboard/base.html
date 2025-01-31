@@ -152,7 +152,7 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'collaborations' %}active{% endif %}"
-                           href="#">
+                           href="{% url 'authentication:collaborations' %}">
                             <i class="fas fa-users"></i> Collaborations
                         </a>
                     </li>

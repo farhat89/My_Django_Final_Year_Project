@@ -59,11 +59,16 @@ urlpatterns = [
     path('profile/', views.profile_view, name='profile'),
     path('search-files/', views.search_files, name='search_files'),
     path('my-files/', views.my_files, name='my_files'),
-     path('download-file/<int:file_id>/', views.download_file, name='download_file'),
+    path('download-file/<int:file_id>/', views.download_file, name='download_file'),
     path('delete-file/<int:file_id>/', views.delete_file, name='delete_file'),
-     path('share-file/<int:file_id>/', views.share_file, name='share_file'),
-     path('shared-files/', views.shared_files, name='shared_files'),
+    path('share-file/<int:file_id>/', views.share_file, name='share_file'),
+    path('shared-files/', views.shared_files, name='shared_files'),
     path('remove-shared-access/<int:shared_file_id>/', views.remove_shared_access, name='remove_shared_access'),
     path('files/<int:file_id>/', views.view_file, name='view_file'),
+    path('collaborations/', views.collaborations, name='collaborations'),
+    path('api/collaborations/', views.api_collaborations, name='api_collaborations'),
+    path('api/collaborations/filter/', views.api_filtered_collaborations, name='api_filtered_collaborations'),
+    path('api/collaboration-activities/', views.api_collaboration_activities, name='api_collaboration_activities'),
+
          
 ]

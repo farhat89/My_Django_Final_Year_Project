@@ -1,0 +1,61 @@
+{% for collab in collaborations %}
+<div class="col-12 collaboration-item">
+    <div class="card collaboration-card">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <h5 class="card-title mb-1">{{ collab.title }}</h5>
+                    <p class="card-text text-muted small mb-0">
+                        {{ collab.description }}
+                    </p>
+                </div>
+                <span class="badge status-badge 
+                    {% if collab.status == 'active' %}bg-success{% else %}bg-warning{% endif %}">
+                    {{ collab.status|title }}
+                </span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <div class="avatar-group">
+                        {% for participant in collab.participants.all|slice:":3" %}
+                        <div class="avatar-sm me-2">
+                            {% if participant.profile_picture %}
+                            <img src="{{ participant.profile_picture.url }}" 
+                                 class="rounded-circle participant-avatar" 
+                                 alt="{{ participant.get_full_name }}">
+                            {% else %}
+                            <div class="rounded-circle bg-primary text-white d-flex 
+                                align-items-center justify-content-center participant-avatar">
+                                {{ participant.get_full_name|default:participant.email|make_list|first|upper }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        {% if collab.participants.count > 3 %}
+                        <div class="avatar-sm bg-light text-muted rounded-circle 
+                            d-flex align-items-center justify-content-center participant-avatar">
+                            +{{ collab.participants.count|add:"-3" }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="text-end">
+                    <small class="text-muted d-block">Updated</small>
+                    <small class="text-muted">{{ collab.updated_at|timesince }} ago</small>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer bg-transparent border-0 d-flex justify-content-end gap-2 pt-0 collaboration-actions">
+            <button class="btn btn-sm btn-light">
+                <i class="fas fa-eye me-2"></i>View
+            </button>
+            <button class="btn btn-sm btn-light">
+                <i class="fas fa-pencil-alt me-2"></i>Edit
+            </button>
+            <button class="btn btn-sm btn-light">
+                <i class="fas fa-share me-2"></i>Share
+            </button>
+        </div>
+    </div>
+</div>
+{% endfor %}

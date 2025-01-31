@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
-from django.contrib.auth.models import User
+# from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+User = get_user_model()  # Get active user model
 from django.views.decorators.csrf import csrf_protect
 from django.utils import timezone
 from django.http import JsonResponse
@@ -12,7 +14,7 @@ from django.db.models import Sum
 import json
 from django.core.exceptions import ValidationError
 from .forms import LoginForm, UserRegistrationForm
-from .models import File, Collaboration, Notification, SharedFile
+from .models import File, Collaboration, Notification, SharedFile, CollaborationActivity
 from django.core.paginator import Paginator
 from django.http import HttpResponse, FileResponse
 from django.core.files.storage import default_storage
@@ -21,6 +23,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 import os
 import mimetypes
+from django.template.loader import render_to_string
 
 def home(request):
     return render(request, 'authentication/home.html')
@@ -584,3 +587,110 @@ def api_shared_files(request):
     } for sf in page_obj]
     
     return JsonResponse({'files': files})    
+
+#collaborations views
+@login_required
+def collaborations(request):
+    # Get active user model at function level
+    User = get_user_model()  # Fresh reference to the active user model
+    # Statistics
+    total_collaborations = Collaboration.objects.filter(user=request.user).count()
+    active_projects = Collaboration.objects.filter(user=request.user, status='active').count()
+    
+    # Get unique collaborators across all collaborations
+    collaborator_ids = Collaboration.objects.filter(user=request.user)\
+        .values_list('participants', flat=True).distinct()
+    total_collaborators = User.objects.filter(id__in=collaborator_ids).count()
+
+    # Active collaborations
+    collaborations = Collaboration.objects.filter(user=request.user)\
+        .prefetch_related('participants').order_by('-updated_at')
+
+    # Recent activities
+    recent_activities = CollaborationActivity.objects.filter(
+        collaboration__user=request.user
+    ).order_by('-created_at')[:10]
+
+    context = {
+        'total_collaborations': total_collaborations,
+        'active_projects': active_projects,
+        'total_collaborators': total_collaborators,
+        'collaborations': collaborations,
+        'recent_activities': recent_activities
+    }
+    return render(request, 'authentication/dashboard/collaborations.html', context)
+
+#api_collaborations views
+@login_required
+def api_collaborations(request):
+    # Get request parameters
+    status = request.GET.get('status', 'all')
+    sort = request.GET.get('sort', 'updated')
+    offset = int(request.GET.get('offset', 0))
+    limit = 5
+
+    # Base queryset
+    collaborations = Collaboration.objects.filter(user=request.user)\
+        .prefetch_related('participants')
+
+    # Apply status filter
+    if status != 'all':
+        collaborations = collaborations.filter(status=status)
+
+    # Apply sorting
+    sort_mapping = {
+        'updated': '-updated_at',
+        'created': '-created_at',
+        'name': 'title'
+    }
+    collaborations = collaborations.order_by(sort_mapping.get(sort, '-updated_at'))
+
+    # Apply pagination
+    collaborations = collaborations[offset:offset+limit]
+
+    # Render HTML partial
+    html = render_to_string('authentication/partials/collaboration_items.html', {
+        'collaborations': collaborations
+    })
+
+    return JsonResponse({'html': html})
+
+@login_required
+def api_collaboration_activities(request):
+    offset = int(request.GET.get('offset', 0))
+    limit = 5
+    
+    activities = CollaborationActivity.objects.filter(
+        collaboration__user=request.user
+    ).order_by('-created_at')[offset:offset+limit]
+    
+    html = render_to_string('authentication/partials/activity_items.html', {
+        'activities': activities
+    })
+    
+    return JsonResponse({'html': html})
+
+# new endpoint for combined filtering/sorting
+@login_required
+def api_filtered_collaborations(request):
+    status = request.GET.get('status', 'all')
+    sort = request.GET.get('sort', 'updated')
+    
+    collaborations = Collaboration.objects.filter(user=request.user)\
+        .prefetch_related('participants')
+
+    if status != 'all':
+        collaborations = collaborations.filter(status=status)
+
+    sort_mapping = {
+        'updated': '-updated_at',
+        'created': '-created_at',
+        'name': 'title'
+    }
+    collaborations = collaborations.order_by(sort_mapping.get(sort, '-updated_at'))
+
+    html = render_to_string('authentication/partials/collaboration_items.html', {
+        'collaborations': collaborations
+    })
+
+    return JsonResponse({'html': html})
