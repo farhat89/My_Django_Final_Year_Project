@@ -68,6 +68,16 @@ class User(AbstractUser):
         null=True
     )
 
+    # New notification preference fields
+    email_notifications = models.BooleanField(
+        default=True,
+        help_text="Enable email notifications about account activity"
+    )
+    file_updates = models.BooleanField(
+        default=True,
+        help_text="Receive notifications when shared files are modified"
+    )
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'role']
 

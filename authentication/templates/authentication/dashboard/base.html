@@ -113,7 +113,7 @@
                         <li><a class="dropdown-item py-2" href="{% url 'authentication:profile' %}">
                             <i class="fas fa-user me-2"></i> Profile
                         </a></li>
-                        <li><a class="dropdown-item py-2" href="#">
+                        <li><a class="dropdown-item py-2" href="{% url 'authentication:settings' %}">
                             <i class="fas fa-cog me-2"></i> Settings
                         </a></li>
                         <li><hr class="dropdown-divider"></li>
@@ -166,7 +166,7 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}"
-                           href="#">
+                           href="{% url 'authentication:settings' %}">
                             <i class="fas fa-cog"></i> Settings
                         </a>
                     </li>

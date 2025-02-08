@@ -72,6 +72,8 @@ urlpatterns = [
     path('create-collaboration/', views.create_collaboration, name='create_collaboration'),
     path('collaboration/<uuid:collab_uuid>/', views.collaboration_session, name='collaboration_session'),
     path('collaborations/', views.collaborations, name='collaborations'),
+    path('settings/', views.settings_view, name='settings'),
+    path('api/update-notifications/', views.update_notification_prefs, name='update_notifications'),
 
          
 ]

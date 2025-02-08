@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib import messages
 # from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
@@ -25,6 +25,7 @@ import os
 import mimetypes
 from django.template.loader import render_to_string
 import logging
+from django.contrib.auth.password_validation import validate_password
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -782,3 +783,54 @@ def collaboration_session(request, collab_uuid):
         'file_content': file_content,
         'collab_uuid': collab_uuid  # Pass the UUID to the template
     })
+
+#settings views
+@login_required
+def settings_view(request):
+    if request.method == 'POST':
+        # Handle profile picture update
+        if 'profile_picture' in request.FILES:
+            try:
+                request.user.profile_picture = request.FILES['profile_picture']
+                request.user.save()
+                messages.success(request, 'Profile picture updated successfully!')
+            except ValidationError as e:
+                messages.error(request, str(e))
+            return redirect('authentication:settings')
+
+        # Handle password change
+        current_password = request.POST.get('current_password')
+        new_password = request.POST.get('new_password')
+        
+        if current_password and new_password:
+            if not request.user.check_password(current_password):
+                return JsonResponse({'success': False, 'error': 'Current password is incorrect'})
+            
+            try:
+                validate_password(new_password, user=request.user)
+                request.user.set_password(new_password)
+                request.user.save()
+                update_session_auth_hash(request, request.user)
+                return JsonResponse({'success': True})
+            except ValidationError as e:
+                return JsonResponse({'success': False, 'error': ', '.join(e.messages)})
+
+    return render(request, 'authentication/dashboard/settings.html')
+
+@login_required
+@require_http_methods(["POST"])
+def update_notification_prefs(request):
+    try:
+        data = json.loads(request.body)
+        setting = data.get('setting')
+        value = data.get('value')
+        
+        if setting == 'emailNotifications':
+            request.user.email_notifications = value
+        elif setting == 'fileUpdates':
+            request.user.file_updates = value
+        
+        request.user.save()
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
