@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from PIL import Image
 import magic
 import re
+from .models import Collaboration, File  # Import the Collaboration and File models
 
 User = get_user_model()
 
@@ -161,3 +162,62 @@ class UserRegistrationForm(forms.ModelForm):
             user.save()
             print(f"After save, department is: {user.department}")  # Debug print
         return user
+    
+
+class CollaborationForm(forms.ModelForm):
+    existing_file = forms.ModelChoiceField(
+        queryset=File.objects.none(),
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'form-control',
+            'id': 'existing-file-select'
+        }),
+        label="Select Existing File"
+    )
+    
+    new_file = forms.FileField(
+        required=False,
+        widget=forms.FileInput(attrs={
+            'class': 'form-control',
+            'accept': '.txt,.doc,.docx,.pdf',
+            'id': 'new-file-input'
+        }),
+        label="Upload New File"
+    )
+
+    participants = forms.ModelMultipleChoiceField(
+        queryset=User.objects.all(),
+        widget=forms.SelectMultiple(attrs={
+            'class': 'form-select',
+            'data-placeholder': 'Select participants...'
+        }),
+        required=True
+    )
+
+    class Meta:
+        model = Collaboration
+        fields = ['title', 'description', 'participants']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user:
+            self.fields['participants'].queryset = User.objects.exclude(id=user.id)
+            self.fields['existing_file'].queryset = File.objects.filter(user=user)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        existing_file = cleaned_data.get('existing_file')
+        new_file = cleaned_data.get('new_file')
+        
+        if not existing_file and not new_file:
+            raise forms.ValidationError("You must select either an existing file or upload a new one.")
+        
+        if existing_file and new_file:
+            raise forms.ValidationError("Please select only one file option (existing or new).")
+        
+        return cleaned_data

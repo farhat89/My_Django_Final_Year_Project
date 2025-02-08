@@ -34,6 +34,52 @@
         align-items: center;
         justify-content: center;
     }
+    /* Selected file container */
+    .file-selected .select2-selection {
+        border: 2px solid #28a745 !important;
+        background-color: #f8fff9 !important;
+        border-radius: 4px !important;
+    }
+
+    /* Dropdown option styling */
+    .select2-results__option--selected {
+        background: #e8f4ff !important;
+        position: relative;
+    }
+
+    .select2-results__option--selected .selected-indicator {
+        display: inline-block !important;
+    }
+
+    /* Selected file indicator */
+    .selected-indicator {
+        display: none;
+        color: #28a745;
+        margin-left: auto;
+    }
+
+    /* File icon styling */
+    .fa-file {
+        width: 20px;
+        font-size: 0.9rem;
+    }
+
+    /* Hover effects */
+    .select2-results__option:hover .selected-indicator {
+        display: inline-block !important;
+        opacity: 0.5;
+    }
+    .file-upload-selected .custom-file-label {
+        border-color: #28a745;
+        background-color: #f8fff9;
+        color: #28a745;
+        font-weight: 500;
+    }
+    
+    .file-upload-selected .custom-file-label::after {
+        color: #28a745;
+        border-left-color: #e3f5eb;
+    }
     @media (max-width: 768px) {
         .search-input-group {
             width: 100% !important;
@@ -281,29 +327,57 @@
             </div>
         </div>
     </div>
+    
 </div>
 
 <!-- New Collaboration Modal -->
 <div class="modal fade" id="newCollaborationModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header border-0">
                 <h5 class="modal-title">Start New Collaboration</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form id="newCollaborationForm">
+                <form id="newCollaborationForm" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <!-- Title & Description -->
                     <div class="mb-3">
                         <label class="form-label">Project Title</label>
-                        <input type="text" class="form-control" required>
+                        <input type="text" name="title" class="form-control" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Description</label>
-                        <textarea class="form-control" rows="3"></textarea>
+                        <textarea name="description" class="form-control" rows="3" required></textarea>
                     </div>
+
+                    <!-- File Selection -->
+                    <div class="mb-4">
+                        <label class="form-label">File Selection</label>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <select name="existing_file" class="form-control" id="existing-file-select">
+                                    <option value="">Select Existing File</option>
+                                    {% for file in request.user.file_set.all %}
+                                    <option value="{{ file.id }}">{{ file.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="custom-file">
+                                    <input type="file" name="new_file" class="custom-file-input" id="new-file-input">
+                                    <label class="custom-file-label" for="new-file-input">Upload New File</label>
+                                </div>
+                            </div>
+                        </div>
+                        <small class="form-text text-muted">Select either an existing file or upload a new one</small>
+                    </div>
+
+                    <!-- Participants -->
                     <div class="mb-3">
                         <label class="form-label">Add Participants</label>
-                        <select class="form-select" multiple>
+                        <select name="participants" class="form-select" multiple required
+                                data-ajax-url="{% url 'authentication:search_users' %}">
                             {% for user in users %}
                             <option value="{{ user.id }}">{{ user.get_full_name|default:user.email }}</option>
                             {% endfor %}
@@ -318,9 +392,16 @@
         </div>
     </div>
 </div>
+
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+<!-- jQuery and Select2 -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
     // Filter and Sort Functionality
     let currentStatus = 'all';
@@ -403,6 +484,176 @@
     // Initial setup
     document.addEventListener('DOMContentLoaded', () => {
         initInfiniteScroll();
+    });
+
+    // WebSocket Connection
+    let collaborationSocket = null;
+
+    // Initialize WebSocket only AFTER successful collaboration creation
+    function connectToCollaboration(collabId) {
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        const wsUrl = `${wsProtocol}${window.location.host}/ws/collaboration/${collabId}/`;
+        collaborationSocket = new WebSocket(wsUrl);
+        
+        // Add your WebSocket handlers here
+        collaborationSocket.onopen = function(e) {
+            console.log('WebSocket connection established');
+        };
+
+        collaborationSocket.onerror = function(e) {
+            console.error('WebSocket error:', e);
+        };
+    }
+
+    // Real-time Document Handling
+    let localDocumentState = {};
+    
+    function handleDocumentUpdate(data) {
+        if(data.user !== currentUserEmail) {
+            // Apply remote changes to editor
+            quill.updateContents(data.operations);
+        }
+    }
+
+    // Add Select2 initialization with UI feedback
+    $(document).ready(function() {
+        // Initialize Select2 for participants
+        $('select[name="participants"]').select2({
+            placeholder: "Search and select participants...",
+            width: '100%',
+            dropdownParent: $('#newCollaborationModal'),
+            ajax: {
+                url: '{% url "authentication:search_users" %}',
+                dataType: 'json',
+                delay: 250,
+                processResults: function(data) {
+                    return {
+                        results: data.users.map(user => ({
+                            id: user.id,
+                            text: user.text
+                        }))
+                    };
+                }
+            }
+        });
+
+        // Initialize Select2 for existing files with enhanced feedback
+        $('#existing-file-select').select2({
+            placeholder: "Select Existing File",
+            width: '100%',
+            dropdownParent: $('#newCollaborationModal'),
+            templateResult: formatFileOption,
+            templateSelection: formatFileSelection,
+            containerCssClass: 'file-select-container'
+        });
+
+        // Custom format for file options in dropdown
+        function formatFileOption(file) {
+            if (!file.id) return file.text;
+            return $(
+                `<div class="file-option d-flex align-items-center p-2">
+                    <i class="fas fa-file text-primary me-2"></i>
+                    <span>${file.text}</span>
+                    <span class="selected-indicator ms-auto">
+                        <i class="fas fa-check-circle text-success"></i>
+                    </span>
+                </div>`
+            );
+        }
+
+        // Custom template for selected item display
+        function formatFileSelection(file) {
+            if (!file.id) return file.text;
+            return $(
+                `<div class="selected-file d-flex align-items-center">
+                    <i class="fas fa-file text-success me-2"></i>
+                    <span class="fw-medium">${file.text}</span>
+                    <span class="selected-indicator ms-2">
+                        <i class="fas fa-check-circle text-success"></i>
+                    </span>
+                </div>`
+            );
+        }
+
+        // Visual feedback for file selection
+        $('#existing-file-select').on('select2:select', function(e) {
+            $(this).closest('.form-group')
+                .find('.select2-container')
+                .addClass('file-selected')
+                .removeClass('file-not-selected');
+        });
+    
+        $('#existing-file-select').on('select2:unselect', function(e) {
+            $(this).closest('.form-group')
+                .find('.select2-container')
+                .removeClass('file-selected')
+                .addClass('file-not-selected');
+        });
+
+        // File input handling
+        $('#new-file-input').change(function(e) {
+            const fileName = e.target.files[0]?.name || 'Choose file';
+            $(this).next('.custom-file-label').html(fileName);
+            $('#existing-file-select').val(null).trigger('change');
+            
+            // Add visual feedback
+            $(this).closest('.form-group')
+                .addClass('file-upload-selected')
+                .removeClass('file-not-selected');
+        });
+        // Modal cleanup
+        $('#newCollaborationModal').on('show.bs.modal', function() {
+            $('#existing-file-select').val(null).trigger('change');
+            $('#new-file-input').val('');
+            $('.custom-file-label').html('Upload New File');
+            $('.form-group').removeClass('file-selected file-upload-selected file-existing-selected');
+        });
+    });
+
+    
+    // Form submission handler
+    document.getElementById('newCollaborationForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        
+        // Handle participants
+        const participants = $('select[name="participants"]').val() || [];
+        formData.delete('participants');
+        participants.forEach(p => formData.append('participants', p));
+    
+        // Validate file selection
+        const existingFile = $('#existing-file-select').val();
+        const newFile = $('#new-file-input')[0].files[0];
+        
+        if (!existingFile && !newFile) {
+            alert('Please select either an existing file or upload a new one');
+            return;
+        }
+    
+        try {
+            const response = await fetch('{% url "authentication:create_collaboration" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            });
+    
+            const data = await response.json();
+            
+            if (data.redirect) {
+                window.location.href = data.redirect;
+            } else if (data.errors) {
+                const errorList = Object.values(data.errors)
+                    .flat()
+                    .map(error => error.message)
+                    .filter(Boolean);
+                alert('Errors:\n' + errorList.join('\n'));
+            }
+        } catch (error) {
+            console.error('Submission error:', error);
+            alert('Error: ' + error.message);
+        }
     });
 </script>
 {% endblock %}

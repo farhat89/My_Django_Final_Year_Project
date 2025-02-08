@@ -65,10 +65,13 @@ urlpatterns = [
     path('shared-files/', views.shared_files, name='shared_files'),
     path('remove-shared-access/<int:shared_file_id>/', views.remove_shared_access, name='remove_shared_access'),
     path('files/<int:file_id>/', views.view_file, name='view_file'),
-    path('collaborations/', views.collaborations, name='collaborations'),
     path('api/collaborations/', views.api_collaborations, name='api_collaborations'),
     path('api/collaborations/filter/', views.api_filtered_collaborations, name='api_filtered_collaborations'),
     path('api/collaboration-activities/', views.api_collaboration_activities, name='api_collaboration_activities'),
+    path('api/search-users/', views.search_users, name='search_users'),
+    path('create-collaboration/', views.create_collaboration, name='create_collaboration'),
+    path('collaboration/<uuid:collab_uuid>/', views.collaboration_session, name='collaboration_session'),
+    path('collaborations/', views.collaborations, name='collaborations'),
 
          
 ]

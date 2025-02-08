@@ -1,0 +1,293 @@
+{% extends 'authentication/dashboard/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link href="/styles.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+<style>
+    /* Editor Container */
+    #editor-container {
+        height: calc(100vh - 120px);
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-top: 20px;
+    }
+
+    .ql-toolbar {
+        border-radius: 8px 8px 0 0;
+        background: #f8f9fa !important;
+        border-bottom: 1px solid #e0e0e0 !important;
+    }
+
+    /* Participants Panel */
+    .participants-panel {
+        border-left: 1px solid #e0e0e0;
+        padding: 1.5rem;
+        background: #f8f9fa;
+        height: calc(100vh - 80px);
+        overflow-y: auto;
+    }
+
+    .participant-card {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        transition: transform 0.2s ease;
+    }
+
+    .participant-card:hover {
+        transform: translateX(3px);
+    }
+
+    .participant-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 500;
+        font-size: 1rem;
+        flex-shrink: 0;
+        overflow: hidden;
+    }
+
+    .participant-name {
+        margin-left: 1rem;
+        font-size: 0.9rem;
+        color: #2d3748;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    @media (max-width: 768px) {
+        .participants-panel {
+            height: auto;
+            border-left: none;
+            border-top: 1px solid #e0e0e0;
+            padding: 1rem;
+        }
+        
+        .participant-card {
+            padding: 0.5rem;
+        }
+        
+        .participant-avatar {
+            width: 36px;
+            height: 36px;
+        }
+        
+        #editor-container {
+            height: 60vh;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid vh-100">
+    <div class="row h-100 gx-3">
+        <!-- Editor Column -->
+        <div class="col-lg-9 h-100 d-flex flex-column">
+            <h2 class="mb-3">{{ collaboration.title }}</h2>
+            
+            <!-- Custom Quill Toolbar -->
+            <div id="toolbar-container">
+                <span class="ql-formats">
+                    <select class="ql-font"></select>
+                    <select class="ql-size"></select>
+                </span>
+                <span class="ql-formats">
+                    <button class="ql-bold"></button>
+                    <button class="ql-italic"></button>
+                    <button class="ql-underline"></button>
+                    <button class="ql-strike"></button>
+                </span>
+                <span class="ql-formats">
+                    <select class="ql-color"></select>
+                    <select class="ql-background"></select>
+                </span>
+                <span class="ql-formats">
+                    <button class="ql-script" value="sub"></button>
+                    <button class="ql-script" value="super"></button>
+                </span>
+                <span class="ql-formats">
+                    <button class="ql-header" value="1"></button>
+                    <button class="ql-header" value="2"></button>
+                    <button class="ql-blockquote"></button>
+                    <button class="ql-code-block"></button>
+                </span>
+                <span class="ql-formats">
+                    <button class="ql-list" value="ordered"></button>
+                    <button class="ql-list" value="bullet"></button>
+                    <button class="ql-indent" value="-1"></button>
+                    <button class="ql-indent" value="+1"></button>
+                </span>
+                <span class="ql-formats">
+                    <button class="ql-direction" value="rtl"></button>
+                    <select class="ql-align"></select>
+                </span>
+                <span class="ql-formats">
+                    <button class="ql-link"></button>
+                    <button class="ql-image"></button>
+                    <button class="ql-video"></button>
+                    <button class="ql-formula"></button>
+                </span>
+                <span class="ql-formats">
+                    <button class="ql-clean"></button>
+                </span>
+            </div>
+
+            <!-- Editor Container -->
+            <div id="editor-container">
+                <div id="editor">{{ file_content|safe }}</div>
+            </div>
+        </div>
+
+        <!-- Participants Panel -->
+        <div class="col-lg-3 participants-panel">
+            <h4 class="mb-3">Participants</h4>
+            <div id="participants-list">
+                {% for participant in collaboration.participants.all %}
+                <div class="participant-card">
+                    <div class="participant-avatar">
+                        {% if participant.profile_picture %}
+                        <img src="{{ participant.profile_picture.url }}" 
+                             class="w-100 h-100 object-fit-cover"
+                             alt="{{ participant.get_full_name }}">
+                        {% else %}
+                        <div class="bg-primary text-white w-100 h-100 d-flex 
+                             align-items-center justify-content-center">
+                            {{ participant.get_full_name|default:participant.email|make_list|first|upper }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <span class="participant-name">
+                        {{ participant.get_full_name|default:participant.email }}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize Quill Editor
+    const quill = new Quill('#editor', {
+        modules: {
+            syntax: {
+                highlight: text => hljs.highlightAuto(text).value
+            },
+            toolbar: '#toolbar-container',
+            history: {
+                delay: 2000,
+                maxStack: 500,
+                userOnly: true
+            }
+        },
+        placeholder: 'Compose an epic...',
+        theme: 'snow'
+    });
+
+    // Get collab_uuid from template context
+    const collabUuid = '{{ collaboration.channel_group }}';  // Use UUID instead of ID
+    // Determine the WebSocket protocol (ws:// or wss://)
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+    // Construct the WebSocket URL using the UUID
+    const wsUrl = `${wsProtocol}${window.location.host}/ws/collaboration/${collabUuid}/`;
+    
+    const socket = new WebSocket(wsUrl);
+
+    // Connection status indicators
+    const connectionStatus = {
+        CONNECTING: 0,
+        OPEN: 1,
+        CLOSING: 2,
+        CLOSED: 3
+    };
+
+    // Handle connection events
+    socket.onopen = () => {
+        console.log('WebSocket connected successfully');
+        quill.enable(true);
+    };
+
+    socket.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        quill.enable(false);
+    };
+
+    socket.onclose = (event) => {
+        console.log('WebSocket disconnected:', event.reason);
+        quill.enable(false);
+    };
+
+    // Handle incoming messages
+    socket.onmessage = (event) => {
+        try {
+            const data = JSON.parse(event.data);
+            switch(data.type) {
+                case 'document_update':
+                    quill.updateContents(data.operations);
+                    break;
+                case 'user_list':
+                    updateParticipantsList(data.participants);
+                    break;
+            }
+        } catch (error) {
+            console.error('Error processing message:', error);
+        }
+    };
+
+    // Send document updates
+    quill.on('text-change', (delta, oldDelta, source) => {
+        if (source === 'user' && socket.readyState === connectionStatus.OPEN) {
+            socket.send(JSON.stringify({
+                type: 'document_update',
+                operations: delta,
+                documentId: collabUuid,  // Use UUID instead of ID
+                userId: "{{ request.user.id }}"
+            }));
+        }
+    });
+
+    // Add periodic connection check
+    setInterval(() => {
+        if (socket.readyState === connectionStatus.CLOSED) {
+            console.log('Attempting to reconnect...');
+            socket = new WebSocket(wsUrl);
+        }
+    }, 5000);
+
+    // Responsive Toolbar Handling
+    function adaptToolbar() {
+        const toolbar = document.getElementById('toolbar-container');
+        if (window.innerWidth < 768) {
+            toolbar.classList.add('ql-mobile');
+        } else {
+            toolbar.classList.remove('ql-mobile');
+        }
+    }
+
+    window.addEventListener('resize', adaptToolbar);
+    adaptToolbar();
+});
+</script>
+{% endblock %}

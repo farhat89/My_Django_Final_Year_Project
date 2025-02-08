@@ -10,10 +10,10 @@ from django.http import JsonResponse
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
-from django.db.models import Sum
+from django.db.models import Sum, Q
 import json
 from django.core.exceptions import ValidationError
-from .forms import LoginForm, UserRegistrationForm
+from .forms import LoginForm, UserRegistrationForm, CollaborationForm
 from .models import File, Collaboration, Notification, SharedFile, CollaborationActivity
 from django.core.paginator import Paginator
 from django.http import HttpResponse, FileResponse
@@ -24,6 +24,10 @@ from django.conf import settings
 import os
 import mimetypes
 from django.template.loader import render_to_string
+import logging
+
+# Configure logger
+logger = logging.getLogger(__name__)
 
 def home(request):
     return render(request, 'authentication/home.html')
@@ -299,9 +303,9 @@ def get_recent_activities(user):
     recent_collabs = Collaboration.objects.filter(user=user).order_by('-created_at')[:3]
     for collab in recent_collabs:
         activities.append({
-            'description': f"Started collaboration on: {collab.file.name}",
+            'description': f"Started collaboration on: {collab.file.name if collab.file else 'Untitled File'}",
             'timestamp': collab.created_at,
-            'icon': 'users',  # Font Awesome icon name
+            'icon': 'users', #Font awesome icon name
             'type': 'collaboration'
         })
     
@@ -694,3 +698,87 @@ def api_filtered_collaborations(request):
     })
 
     return JsonResponse({'html': html})
+
+@login_required
+def create_collaboration(request):
+    if request.method == 'POST':
+        form = CollaborationForm(request.POST, request.FILES, user=request.user)
+        if form.is_valid():
+            try:
+                # Handle file assignment
+                file_instance = None
+                if form.cleaned_data.get('existing_file'):
+                    file_instance = form.cleaned_data['existing_file']
+                elif form.cleaned_data.get('new_file'):
+                    uploaded_file = form.cleaned_data['new_file']
+                    file_instance = File.objects.create(
+                        user=request.user,
+                        name=uploaded_file.name,
+                        file=uploaded_file,
+                        file_size=uploaded_file.size
+                    )
+                
+                # Create collaboration
+                collaboration = form.save(commit=False)
+                collaboration.user = request.user
+                collaboration.file = file_instance
+                collaboration.save()
+                form.save_m2m()  # Save participants
+                
+                # Add owner as participant if not already included
+                if request.user not in collaboration.participants.all():
+                    collaboration.participants.add(request.user)
+
+                return JsonResponse({
+                    'status': 'success',
+                    'redirect': reverse('authentication:collaboration_session', args=[collaboration.channel_group])
+                })
+
+            except Exception as e:
+                logger.error(f"Collaboration creation error: {str(e)}")
+                return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+        return JsonResponse({'status': 'error', 'errors': form.errors.get_json_data()}, status=400)
+    return JsonResponse({'status': 'invalid_request'}, status=400)
+
+@login_required
+def search_users(request):
+    search_term = request.GET.get('q', '')
+    users = User.objects.filter(
+        Q(email__icontains=search_term) |
+        Q(first_name__icontains=search_term) |
+        Q(last_name__icontains=search_term)
+    ).exclude(id=request.user.id)[:10]
+
+    results = [{
+        'id': user.id,
+        'text': f"{user.get_full_name() or user.email} ({user.email})"
+    } for user in users]
+
+    return JsonResponse({'users': results})
+
+@login_required
+def collaboration_session(request, collab_uuid):
+    # Fetch the collaboration object using the UUID and ensure the user is a participant
+    collaboration = get_object_or_404(
+        Collaboration,
+        channel_group=collab_uuid,
+        participants=request.user  # Ensuring user is a participant
+    )
+
+    # Read the file content if a file is associated with the collaboration
+    file_content = ""
+    if collaboration.file and collaboration.file.file:
+        try:
+            # Read file as binary and decode with UTF-8, replace errors
+            with collaboration.file.file.open('rb') as f:
+                file_content = f.read().decode('utf-8', errors='replace')
+        except Exception as e:
+            logger.error(f"Error reading file: {str(e)}")
+            file_content = "Error: Unable to display file content"
+
+    # Pass the collaboration object, file content, and UUID to the template
+    return render(request, 'authentication/dashboard/session.html', {
+        'collaboration': collaboration,
+        'file_content': file_content,
+        'collab_uuid': collab_uuid  # Pass the UUID to the template
+    })

@@ -9,6 +9,7 @@ from django.core.validators import EmailValidator
 from django.core.exceptions import ValidationError
 from PIL import Image
 import os
+import uuid
 
 # Validator to ensure the image size does not exceed the limit
 def validate_image_size(image):
@@ -114,6 +115,7 @@ class Collaboration(models.Model):
         ('archived', 'Archived')
     ]
     
+    id = models.AutoField(primary_key=True)  # Auto-incrementing primary key
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     description = models.TextField()
@@ -122,6 +124,12 @@ class Collaboration(models.Model):
     participants = models.ManyToManyField(User, related_name='collaborations')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    channel_group = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        unique=True
+    )
 
     def __str__(self):
         return self.title

@@ -1,0 +1,150 @@
+You should replace the "tasks card" i circled in the main content area with a "storage used card" instead. And again in the left side panel you will see where i circled some content there with red line, you should replace the "Tasks" with a "Shared files" and replace "Favorites" with a "Settings".
+
+
+
+{% block scripts %}
+<!-- Include Font Awesome for icons -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
+<!-- Include your form validation script -->
+<script src="{% static 'js/custom.js' %}"></script>
+<script>
+    // Password visibility toggle
+    document.getElementById('togglePassword').addEventListener('click', function() {
+        const passwordInput = document.getElementById('password');
+        const icon = this.querySelector('i');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    });
+</script>
+{% endblock %}
+
+<!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
+    <script src="{% static 'js/custom.js' %}"></script>
+    <script>
+        // Password visibility toggle
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('id_password');
+            const icon = this.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    </script>
+
+we are successfully done with the login form. So now i want us to work on the registration form. All the javascript validations in my registration form are not working at all both the one's within the register.html template and the external js, i actually don't know what is the issues with that. Is it that the issues is from view.py, model.py, url.py or settings.py? Even in the browser console i am not seeing anything. Whether a user fills the form with the required information or not, whe he click on register, the form will submit then it will render the password validation error in the login form.
+
+Attached is all the files you requested for. It includes: register.html, custom.js, views.py, forms.py, and models.py. So you can proceed and help me with the debugging.
+
+Implemented user authentication module and prepare for deployment
+
+- Added login, register, and password reset views
+- Integrated user authentication logic and templates
+- Fixed URL routing issues and tested functionality
+- Setup base configurations for Django admin
+
+
+
+i'm successfully done with these two module of my faculty file sharing and collaboration platform system, registration form and login form. But the issues i am facing now in the registration module is that, when a user fills in the registration form fields and click on submit button, the form is not submitting it will be giving a "400 Bad request" error in the console, which i dont know what is happening. I tried all my best to debug but is not working, so now i want you to help me to debug and provide a solution to get rid of the error. Attached is my existing code that will help you in identifying the issues and solve it. It include register.html, custom.js, views.py, models.py, and forms.py. Go through it carefully.
+
+ok so now the next module we will be working is the Homepage/landing page of the system. So i will provide you with the UI design so that you will provide me with the code implementation of it. Remember that we are using HTML, Bootstrap, and javascript for the frontend while we are using Django for the backend and Mysql/postgresql for the database. The footer should be a simple footer and also you should add a favicon of graduation cap beside the platform name to serve as the logo.
+
+
+
+
+This is the how the design appears in the browser of which it didn't match with the previous UI design i provided you with. So now i want you to debug the CSS styles and the bootstrap class to replicate exactly the previous design ensuring responsiveness across various devices. I dont know whether they are conflicting with my existing css. Below is my existing CSS styles you can check it and if you need my existing home.html template
+
+authentication\templates\dashboard
+C:\Users\Easy\Documents\400_LEVEL_STUFFS\Final_year_project\System_Implementation\My_Django_Final_Year_Project\authentication\templates\dashboard\dashboard.html
+authentication\templates\dashboard\dashboard.html
+
+authentication\templates\base.html
+
+Attached is my code for dashboard.html, and base.html template, views.py, and base.css for my my dashboard module, everything works perfectly now. What i wanted you to help me with it now is that, i want you to add a graduation cap icon besides the platform name in the sidebar also in the main contents area i also want you to add a respective icon to each of the card for easy redability and understanding for user. Then you should also provide me with the javascript file for my dashboard functionalities.
+this is the icons i am using in my project: " <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"> "
+
+ok now i am facing another issues, why am i not seeing the dashboard content when i minimize my screen to mobile screen size? I supposed to see the contents of the dashboard in the main content are while on mobile screen size also as it appears in the desktop view. But now i only see the content of the sidebar on the mobile screen even if i click on dashboard it will not display the contents but i used to see the contents in tablet mode. So now i want you to make it responsive in all screen size. And the rest of my javasript code are not working. The only thing that work in the javascript code is the upload button, you can upload but you cant see what you uploaded. I saw the attached error in the console
+
+attached is my existing register.html, models.py, views.py, and form.py you can check them very well and see. If you need any other thing that will help let me know.
+
+the search functionality is now working as expected, but the profile functionality is not working neither is showing any error in the console. May the profie.html template should not extend any base template. It should have it own independent. How do you think?
+
+it worked. Now what i want us to work on is the profile and search functionality. When a user clicks on "profile", he should be able to see his basic information like in the attached image. Now help me to achieve that functionality. While the search functionality is not working now. A user is supposed to be able to search a file, but now the functionality is working even if a user type the file name. So please work on that let achieve these 2 functionalities i mentioned.
+
+
+
+I have redesigned my system's dashboard to match my desired professional UI design, as shown in the attached screenshot. Additionally, I have included the existing codebase associated with this UI design: base.html, dashboard.html, base.css, and dashboard.css.
+
+Your task is to act as a senior developer with years of experience in both UI/UX design and coding expertise. I will also provide you with my previous dashboard.js file, which you will update to align with the new design while ensuring no functionalities are altered.
+
+Specific Requirements:
+Interactivity for Notifications Section:
+
+Implement a "Mark all as read" functionality in the notification card section. When a user clicks this, all notifications should be cleared from the tooltip.
+Make each notification clickable. When a user clicks on an individual notification, they should be able to access and view its content.
+Interactivity for Recent Activities Section:
+
+Ensure that all items in the "Recent Activities" card section are clickable.
+When a user clicks on any recent activity, they should be able to access the uploaded content or activity directly.
+Dashboard.js Update:
+
+Update the dashboard.js file to reflect the new UI design and add the above interactivity.
+Ensure that all existing functionalities remain intact while improving and aligning the code with the updated layout.
+If you're ready to begin, let me know, and I will provide the existing dashboard.js file for you to work on.
+
+
+
+Step 7: Final Adjustments
+Email Sending:
+
+If you're using Gmail, you may need to enable "Less secure app access" or generate an "App password" for your Gmail account.
+
+Alternatively, you can use other email providers (e.g., SendGrid, Mailgun) for better deliverability.
+
+Styling:
+
+Adjust the modal styling to match your UI design using Bootstrap classes or custom CSS.
+
+Error Handling:
+
+Add error handling for invalid email addresses or failed email delivery.
+
+Example of Email Configuration for Gmail:
+Enable Less Secure Apps:
+
+Go to your Google Account settings: https://myaccount.google.com/.
+
+Enable "Allow less secure apps" under the "Security" tab.
+
+Generate an App Password:
+
+If you have 2-Step Verification enabled, generate an app password:
+
+Go to your Google Account settings: https://myaccount.google.com/.
+
+Navigate to "Security" > "App passwords."
+
+Generate a password for your Django app.
+
+Update settings.py:
+
+Use the app password in the EMAIL_HOST_PASSWORD setting.
+
+
