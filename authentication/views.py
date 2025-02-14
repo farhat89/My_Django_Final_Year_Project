@@ -452,16 +452,21 @@ def my_files(request):
 @login_required
 def download_file(request, file_id):
     try:
-        file = File.objects.get(id=file_id, user=request.user)
-        file_path = file.file.path
+        file = File.objects.get(id=file_id)
+        
+        # Check if the user owns the file or has been granted access
+        if file.user == request.user or SharedFile.objects.filter(file=file, shared_with=request.user).exists():
+            file_path = file.file.path
 
-        if os.path.exists(file_path):
-            # Use FileResponse to stream the file to the user
-            response = FileResponse(open(file_path, 'rb'))
-            response['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_path)}"'
-            return response
+            if os.path.exists(file_path):
+                # Use FileResponse to stream the file to the user
+                response = FileResponse(open(file_path, 'rb'))
+                response['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_path)}"'
+                return response
+            else:
+                return JsonResponse({'success': False, 'message': 'File not found.'}, status=404)
         else:
-            return JsonResponse({'success': False, 'message': 'File not found.'}, status=404)
+            return JsonResponse({'success': False, 'message': 'You do not have permission to access this file.'}, status=403)
     except File.DoesNotExist:
         return JsonResponse({'success': False, 'message': 'File not found.'}, status=404)
 
@@ -493,34 +498,59 @@ def share_file(request, file_id):
         emails = data.get('emails', [])
         access_permission = data.get('access_permission', 'view')
 
-        # Send emails to the recipients (placeholder logic)
-        for email in emails:
-            send_mail(
-                subject=f'File Shared: {file.name}',
-                message=f'{request.user.email} has shared a file with you. Access permission: {access_permission}.',
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[email],
-                fail_silently=False,
-            )
+        if not emails:
+            return JsonResponse({'success': False, 'message': 'No recipients provided.'}, status=400)
 
-        # Save the shared file record (placeholder logic)
-        # You can create a model to store shared file records if needed.
+        # Validate emails and fetch corresponding users
+        User = get_user_model()
+        recipients = []
+        for email in emails:
+            try:
+                user = User.objects.get(email=email)
+                recipients.append(user)
+            except User.DoesNotExist:
+                logger.warning(f"User with email {email} does not exist.")
+                continue
+
+        if not recipients:
+            return JsonResponse({'success': False, 'message': 'No valid recipients found.'}, status=400)
+
+        # Create SharedFile records
+        for recipient in recipients:
+            SharedFile.objects.create(
+                file=file,
+                shared_by=request.user,
+                shared_with=recipient,
+                permission=access_permission
+            )
 
         return JsonResponse({'success': True})
     except File.DoesNotExist:
         return JsonResponse({'success': False, 'message': 'File not found.'}, status=404)
     except Exception as e:
+        logger.error(f"Error sharing file: {str(e)}")
         return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
 
 @login_required
 def shared_files(request):
+    # Get files shared by the current user
     shared_by_me = SharedFile.objects.filter(shared_by=request.user)
+    
+    # Get files shared with the current user
     shared_with_me = SharedFile.objects.filter(shared_with=request.user)
     
+    # Calculate the total unique shared files
+    all_shared_files = SharedFile.objects.filter(
+        Q(shared_by=request.user) | Q(shared_with=request.user)
+    ).distinct()
+    
+    total_shared_files = all_shared_files.count()
+
     context = {
         'shared_by_me': shared_by_me,
         'shared_with_me': shared_with_me,
+        'total_shared_files': total_shared_files,
     }
     return render(request, 'authentication/dashboard/shared_files.html', context)
 

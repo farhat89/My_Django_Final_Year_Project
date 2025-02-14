@@ -1,65 +1,111 @@
-<!-- templates/authentication/dashboard/shared_files.html -->
-
 {% extends 'authentication/dashboard/base.html' %}
-
 {% block content %}
 <style>
-    /* Custom CSS for Shared Files Icons */
+    /* Base styles */
+    .shared-files-container {
+        padding: 1rem;
+        max-width: 100%;
+    }
+    /* Responsive typography */
+    h3 {
+        font-size: clamp(1.5rem, 2.5vw, 2rem);
+        margin-bottom: 1.5rem;
+    }
+    .card-title {
+        font-size: clamp(1rem, 1.5vw, 1.25rem);
+    }
+    /* Icons styling */
     .card-title i.fas {
-        font-size: 1.5rem; /* Adjust the size of the icons */
-        color: #1a73e8; /* Blue color for the icons */
-        margin-right: 0.5rem; /* Space between icon and text */
-        vertical-align: middle; /* Align the icon with the text */
+        font-size: clamp(1.25rem, 2vw, 1.5rem);
+        color: #1a73e8;
+        margin-right: 0.5rem;
+        vertical-align: middle;
     }
-
-    /* Style for icons in the card headers */
     .card-header .card-title i.fas {
-        font-size: 1.25rem; /* Slightly smaller size for card headers */
-        color: #1a73e8; /* Blue color for the icons */
-        margin-right: 0.5rem; /* Space between icon and text */
-        vertical-align: middle; /* Align the icon with the text */
+        font-size: clamp(1rem, 1.5vw, 1.25rem);
     }
-
-    /* Optional: Add a subtle hover effect for icons */
     .card-title i.fas:hover,
     .card-header .card-title i.fas:hover {
-        color: #1557a3; /* Darker blue on hover */
-        transition: color 0.3s ease; /* Smooth transition */
+        color: #1557a3;
+        transition: color 0.3s ease;
+    }
+    /* Card and container responsiveness */
+    .card {
+        margin-bottom: 1rem;
+    }
+    .card-body {
+        padding: clamp(0.75rem, 2vw, 1.5rem);
+    }
+    /* Stats cards responsiveness */
+    @media (max-width: 768px) {
+        .stats-card {
+            margin-bottom: 1rem;
+        }
+    }
+    /* Search and filter section responsiveness */
+    .search-filter-section {
+        gap: 1rem;
+    }
+    @media (max-width: 768px) {
+        .search-filter-section > div {
+            margin-bottom: 0.75rem;
+        }
+    }
+    /* Shared file items responsiveness */
+    .shared-file-item {
+        padding: 0.75rem 0;
+    }
+    @media (max-width: 576px) {
+        .shared-file-item .d-flex {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .shared-file-item .btn-group {
+            display: flex;
+            width: 100%;
+            gap: 0.5rem;
+        }
+        .shared-file-item .btn {
+            flex: 1;
+        }
+    }
+    /* Display text responsiveness */
+    .display-6 {
+        font-size: clamp(1.5rem, 3vw, 2.5rem);
     }
 </style>
-
 <div class="shared-files-container">
-    <h3 class="mb-4">Shared Files</h3>
+    <h3>Shared Files</h3>
     
     <!-- Total Shared Files and Counts Section -->
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card text-center">
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-md-4">
+            <div class="card text-center stats-card">
                 <div class="card-body">
                     <h5 class="card-title">
-                        <i class="fas fa-share-alt me-2"></i> <!-- Icon for Total Shared Files -->
+                        <i class="fas fa-share-alt"></i>
                         Total Shared Files
                     </h5>
-                    <p class="card-text display-6">{{ shared_by_me|length|add:shared_with_me|length }}</p>
+                    <p class="card-text display-6">{{ total_shared_files }}</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card text-center">
+        <div class="col-12 col-sm-6 col-md-4">
+            <div class="card text-center stats-card">
                 <div class="card-body">
                     <h5 class="card-title">
-                        <i class="fas fa-upload me-2"></i> <!-- Icon for Shared by Me -->
+                        <i class="fas fa-upload"></i>
                         Shared by Me
                     </h5>
                     <p class="card-text display-6">{{ shared_by_me|length }}</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card text-center">
+        <div class="col-12 col-sm-6 col-md-4">
+            <div class="card text-center stats-card">
                 <div class="card-body">
                     <h5 class="card-title">
-                        <i class="fas fa-download me-2"></i> <!-- Icon for Shared with Me -->
+                        <i class="fas fa-download"></i>
                         Shared with Me
                     </h5>
                     <p class="card-text display-6">{{ shared_with_me|length }}</p>
@@ -67,16 +113,15 @@
             </div>
         </div>
     </div>
-
     <!-- Search and Filter Section -->
-    <div class="row mb-4">
-        <div class="col-md-6">
+    <div class="row g-3 mb-3 search-filter-section">
+        <div class="col-12 col-md-4">
             <div class="input-group">
                 <span class="input-group-text"><i class="fas fa-search"></i></span>
                 <input type="text" id="searchFiles" class="form-control" placeholder="Search files...">
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-12 col-sm-6 col-md-3">
             <select id="filterType" class="form-select">
                 <option value="">All Types</option>
                 <option value="pdf">PDF</option>
@@ -85,90 +130,90 @@
                 <option value="pptx">PowerPoint</option>
             </select>
         </div>
-        <div class="col-md-3">
+        <div class="col-12 col-sm-6 col-md-3">
             <select id="sortBy" class="form-select">
                 <option value="date">Sort by Date</option>
                 <option value="name">Sort by Name</option>
             </select>
         </div>
     </div>
-
     <!-- Shared by Me Card -->
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="card-title mb-0">
-                <i class="fas fa-upload me-2"></i> <!-- Icon for Shared by Me -->
+                <i class="fas fa-upload"></i>
                 Shared by Me
             </h5>
             <span class="badge bg-primary">{{ shared_by_me|length }}</span>
         </div>
         <div class="card-body">
             {% for shared_file in shared_by_me %}
-            <div class="shared-file-item mb-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
+            <div class="shared-file-item">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="file-info">
                         <h6 class="mb-1">{{ shared_file.file.name }}</h6>
                         <small class="text-muted">Shared with {{ shared_file.shared_with.email }} on {{ shared_file.shared_at|date:"M d, Y" }}</small>
                     </div>
-                    <div>
+                    <div class="btn-group">
                         <button class="btn btn-primary btn-sm me-2" onclick="downloadFile({{ shared_file.file.id }})">Download</button>
                         <button class="btn btn-danger btn-sm" onclick="removeSharedAccess({{ shared_file.id }})">Remove Access</button>
                     </div>
                 </div>
-                <hr class="my-2"> <!-- Blue line separator -->
+                <hr class="my-2">
             </div>
             {% endfor %}
         </div>
     </div>
-
     <!-- Shared with Me Card -->
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="card-title mb-0">
-                <i class="fas fa-download me-2"></i> <!-- Icon for Shared with Me -->
+                <i class="fas fa-download"></i>
                 Shared with Me
             </h5>
             <span class="badge bg-primary">{{ shared_with_me|length }}</span>
         </div>
         <div class="card-body">
             {% for shared_file in shared_with_me %}
-            <div class="shared-file-item mb-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
+            <div class="shared-file-item">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="file-info">
                         <h6 class="mb-1">{{ shared_file.file.name }}</h6>
                         <small class="text-muted">Shared by {{ shared_file.shared_by.email }} on {{ shared_file.shared_at|date:"M d, Y" }}</small>
                     </div>
-                    <div>
+                    <div class="btn-group">
                         <button class="btn btn-primary btn-sm" onclick="downloadFile({{ shared_file.file.id }})">Download</button>
                     </div>
                 </div>
-                <hr class="my-2"> <!-- Blue line separator -->
+                <hr class="my-2">
             </div>
             {% endfor %}
         </div>
     </div>
 </div>
-
 <script>
-function downloadFile(fileId) {
-    window.location.href = `/download-file/${fileId}/`;
-}
-
-function removeSharedAccess(sharedFileId) {
-    fetch(`/remove-shared-access/${sharedFileId}/`, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': CSRF_TOKEN,
-            'Content-Type': 'application/json'
-        }
-    }).then(response => response.json())
-      .then(data => {
-          if (data.success) {
-              window.location.reload();
-          } else {
-              alert('Failed to remove shared access.');
-          }
-      });
-}
+    function downloadFile(fileId) {
+        window.location.href = `/auth/download-file/${fileId}/`;
+    }
+    function removeSharedAccess(sharedFileId) {
+        fetch(`/auth/remove-shared-access/${sharedFileId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        }).then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  window.location.reload();
+              } else {
+                  alert('Failed to remove shared access.');
+              }
+          })
+          .catch(error => {
+              console.error('Error removing shared access:', error);
+              alert('An error occurred while removing shared access.');
+          });
+    }
 </script>
 {% endblock %}
