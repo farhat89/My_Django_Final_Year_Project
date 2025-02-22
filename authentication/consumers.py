@@ -125,10 +125,19 @@ class CollaborationConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         """Clean up on disconnect"""
         try:
-            await self.channel_layer.group_discard(
-                self.room_group_name,
-                self.channel_name
-            )
-            logger.info(f"User {self.user.email} disconnected")
+            # Ensure self.user exists before using it
+            user_email = getattr(self, "user", None)
+            room_group = getattr(self, "room_group_name", None)
+
+            if room_group:
+                await self.channel_layer.group_discard(
+                    room_group,
+                    self.channel_name
+                )
+                if user_email:
+                    logger.info(f"User {user_email.email} disconnected from {room_group}")
+                else:
+                    logger.warning("An anonymous/disconnected user left the room.")
+
         except Exception as e:
             logger.error(f"Disconnect error: {str(e)}")
